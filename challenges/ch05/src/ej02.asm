@@ -39,24 +39,37 @@ SECTION "Ejercicio 02", ROM0
 ;; ⚠️ Use "call call_hl" to call the routine whose address is in HL
 ej02::   ;; = `man_entity_for_each`, que está en src/man/man_entity.asm
 
-    ;; ◉◉YOUR CODE◉◉
-
+    ld de, entity_array + (MAX_ENTITIES-1)* SIZEOF_ENTITY
+    ld b, MAX_ENTITIES
 .next
     ld   a, [de]                ;; \ A = entity.CMP
     bit  CMP_ALIVE_BIT, a       ;; | Is it alive?
     jr   z, .skip               ;; / No (it is free): skip it
 
-    ;; ◉◉YOUR CODE◉◉
+    push bc
+    push de
+    push hl
+
+    call call_hl
+
+    pop hl
+    pop de
+    pop bc
+
 .skip                           ;; .skip is required by line 47
-    ;; ◉◉YOUR CODE◉◉
+    ld a, e
+    sub SIZEOF_ENTITY
+    ld e, a
+    dec b
+    jr nz, .next
     ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej02 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Entidades 0, 2 y 5 vivas (solo CMP = 81). HL = tst_cb_log: apunta en tst_log el byte bajo de cada entidad y destruye todos los registros.
@@ -68,7 +81,7 @@ ej02::   ;; = `man_entity_for_each`, que está en src/man/man_entity.asm
 ;;  tst_log: byte bajo de cada entidad llamada, en orden. El último byte (C810) es tst_n: cuántas veces se llamó.
 ;;  Ahora se recorre de la última a la primera.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Las 8 entidades vivas. La rutina llamada destruye BC, DE y HL en cada llamada.

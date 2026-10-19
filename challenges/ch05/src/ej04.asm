@@ -39,15 +39,30 @@ SECTION "Ejercicio 04", ROM0
 ;; ❌ May modify A, BC, HL. Does NOT modify DE
 ;; ⚠️ Use man_entity_create
 ej04::   ;; = `sys_shot_spawn`, que está en src/sys/sys_shot.asm
-    ;; ◉◉YOUR CODE◉◉
+    ld a, [shot_entity]
+    cp SHOT_NONE
+    jr z, .create
+    or 1
+    ret
+.create:
+    ld hl, ShotTemplate
+    call man_entity_create
+    ld a, l ;(F: faltaba esta linea)
+    ld [shot_entity], a ;(previo N: ld shot_entity, l)
+    inc hl
+    ld a, d
+    ld [hl+], a
+    ld a, e
+    ld [hl], a
+    cp a
     ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej04 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Solo la nave. shot_entity = FF (SHOT_NONE). D = 100 (Y), E = 50 (X).
@@ -62,7 +77,7 @@ ej04::   ;; = `sys_shot_spawn`, que está en src/sys/sys_shot.asm
 ;;   C100  97 90 54 4B 00 00 00 01|87 64 32 4C 00 FC 00 02|
 ;;  shot_entity guarda solo el byte bajo de la entidad 1 (08). La entidad 1 se crea con ShotTemplate (con PHYSICS y VY = FC, que trae la plantilla), Y = 100 (64) y X = 50 (32). Se muestran 2 bytes para comprobar que solo escribes UNO: el segundo es el dato que va detrás y no debe cambiar (00).
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> La entidad 1 es un disparo y shot_entity vale 08. D = 100, E = 50.
@@ -81,11 +96,11 @@ ej04::   ;; = `sys_shot_spawn`, que está en src/sys/sys_shot.asm
 ;; ==========================================================
 ;; === FIXES
 ;;  Tipo: Cant. => Tramos
-;;  *  N:    __ => __     (1 fix = -1 tramo)
+;;  *  N:    1 => -1      (1 fix = -1 tramo)
 ;;  *  E:    __ => __     (1 fix = -1 tramo)
 ;;  *  S:    __ => __     (2 fix = -1 tramo. En grupos de 2 solo)
-;;  *  F:    __ => __     (2 fix = -1 tramo. En grupos de 2 solo)
-;;      TOTAL:     __ tramos
+;;  *  F:    1 => 0     (2 fix = -1 tramo. En grupos de 2 solo)
+;;      TOTAL:    -1 tramos
 ;;
 ;; EXPLICACIONES ADICIONALES DE FIXES (si es necesario)
 ;;  *

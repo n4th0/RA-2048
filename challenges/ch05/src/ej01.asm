@@ -39,30 +39,31 @@ SECTION "Ejercicio 01", ROM0
 ;; ❌ May modify A, C, HL. Must NOT modify B or DE
 ;; ⚠️ It does not change the other fields: the caller fills them in
 ej01::   ;; = `man_entity_alloc`, que está en src/man/man_entity.asm
-    ld   b, a
+    ld   c, a
     ld   hl, entity_array
 .next
-    bit  CMP_ALIVE_BIT, hl
-    jr   nz, .found
+    bit  CMP_ALIVE_BIT, [hl]
+    jr   z, .found
     ld   a, l
-    add  SIZEOF_ENTITY
+    add  a, SIZEOF_ENTITY ;(previo N: add SIZEOF_ENTITY)
     ld   l, a
-    cp   MAX_ENTITIES
+    cp   LOW(entity_array) + ENTITY_ARRAY_SIZE
     jr   nz, .next
-    xor  a
+    or  1
     ret
 .found
     ld   a, c
+    OR CMP_ALIVE_BIT
     ld   [hl], a
     xor  a
     ret
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej01 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Entidades 0 y 1 vivas, la 2 libre. A = SPRITE | PHYSICS, B = 5A y DE = 1234 (no deben cambiar).
@@ -77,7 +78,7 @@ ej01::   ;; = `man_entity_alloc`, que está en src/man/man_entity.asm
 ;;   C110  83 00 00 00 00 00 00 00|.. .. .. .. .. .. .. ..|
 ;;  La entidad 2 queda reservada: CMP = A | ALIVE = 83.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Las 8 entidades están vivas. A = SPRITE, B = 5A y DE = 1234.
@@ -93,11 +94,11 @@ ej01::   ;; = `man_entity_alloc`, que está en src/man/man_entity.asm
 ;; ==========================================================
 ;; === FIXES
 ;;  Tipo: Cant. => Tramos
-;;  *  N:    __ => __     (1 fix = -1 tramo)
+;;  *  N:    1 => -1     (1 fix = -1 tramo)
 ;;  *  E:    __ => __     (1 fix = -1 tramo)
 ;;  *  S:    __ => __     (2 fix = -1 tramo. En grupos de 2 solo)
 ;;  *  F:    __ => __     (2 fix = -1 tramo. En grupos de 2 solo)
-;;      TOTAL:     __ tramos
+;;      TOTAL:     -1 tramos
 ;;
 ;; EXPLICACIONES ADICIONALES DE FIXES (si es necesario)
 ;;  *

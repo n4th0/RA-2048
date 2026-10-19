@@ -35,6 +35,16 @@ SECTION "Ejercicio 08", ROM0
 ;; ❌ May modify A, B, DE, HL
 ;; ⚠️ Use wait_vblank and memcpy8
 ej08::   ;; = `sys_render_update`, que está en src/sys/sys_render.asm
+
+    call wait_vblank
+    ld hl, shadow_oam
+    ld de, ENTITIES_OAM ; entitiees_oam <> lo que había antes
+    ld b, SHADOW_OAM_SIZE; fix s shadow_oam_size <> lo que había antes
+    ; call sys_prerender_update ; fix 
+    jp memcpy8
+
+
+
     ;; ◉◉YOUR CODE◉◉
     ret ;; ◀━REMOVE RET IF NEEDED
 

@@ -48,8 +48,24 @@ ej09::   ;; = `sys_collision_overlaps`, que está en src/sys/sys_collision.asm
 
 .y_positive
 
-    ;; ◉◉YOUR CODE◉◉
-    ret ;; ◀━REMOVE RET IF NEEDED
+    cp HIT_H
+    jr nc, .no_overlap
+    inc de
+    inc hl 
+    ld a, [de]
+    sub [hl]
+    jr nc, .x_positive
+    cpl 
+    inc a
+  .x_positive:
+    cp HIT_W
+    jr nc, .no_overlap
+    xor a
+    ret
+  .no_overlap:
+    or 1
+    ret
+
 
 ;; ==========================================================
 ;;  ENSAMBLA: ____  (SÍ / NO)

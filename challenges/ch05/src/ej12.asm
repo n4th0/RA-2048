@@ -46,6 +46,17 @@ SECTION "Ejercicio 12", ROM0
 ;; ❌ May modify A, BC, DE, HL
 ej12::   ;; = `game_handle_collisions`, que está en src/scn/scn_game_rules.asm
 
+call sys_shot_get
+jr z, .ship
+ld b, KIND_ENEMY
+call sys_collision_update
+call nz, game_enemy_hit
+call sys_shot_get
+jr z, .ship
+ld b, KIND_BONUS
+call sys_collision_update
+call nz, game_bonus_shot
+
     ;; ◉◉YOUR CODE◉◉
 
 .ship

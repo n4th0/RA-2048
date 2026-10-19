@@ -41,15 +41,42 @@ SECTION "Ejercicio 07", ROM0
 ;; ❌ May modify A, BC, DE, HL
 ;; ⚠️ Use man_entity_for_each
 ej07::   ;; = `sys_prerender_update`, que está en src/sys/sys_prerender.asm
-    ;; ◉◉YOUR CODE◉◉
+    ;; FIX E1 (Tipo E - Errónea): Cambiada la inicialización previa por la escritura de 0 en shadow_cursor.
+    xor  a
+    ld   [shadow_cursor], a     ;; 1. Poner shadow_cursor al inicio de shadow_oam (LOW = 0)
+
+    ;; 2. Recorrer todas las entidades llamando a sys_prerender_one
+    ld   hl, sys_prerender_one  ;; FIX E2 (Tipo E - Errónea): Usar call en lugar de jp para continuar tras el recorrido.
+    call man_entity_for_each
+
+    ;; 3. Ocultar los sprites que no se han escrito (poniendo Y = 0)
+    ld   a, [shadow_cursor]
+    ld   l, a
+    ld   h, HIGH(shadow_oam)    ;; HL apunta al primer byte no escrito en shadow_oam
+
+.hide_loop
+    ld   a, l
+    cp   SHADOW_OAM_SIZE        ;; ¿Hemos llegado al final de la OAM de entidades?
+    jr   nc, .done              ;; Si l >= SHADOW_OAM_SIZE, terminar
+
+    ;; FIX F1 (Tipo F - Falta): Añadido bucle de ocultación de sprites poniendo Y = 0 de 4 en 4 bytes.
+    xor  a
+    ld   [hl], a                ;; Poner Y = 0 (oculta el sprite)
+
+    ld   a, l
+    add  a, 4                   ;; Avanzar al siguiente sprite (cada sprite ocupa 4 bytes)
+    ld   l, a
+    jr   .hide_loop
+
+.done
     ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej07 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Entidades 0 (nave) y 2 (asteroide) con SPRITE. La OAM sombra, llena de EE (32 bytes). shadow_cursor vale 14 (le queda el valor de la pasada anterior).
@@ -63,7 +90,7 @@ ej07::   ;; = `sys_prerender_update`, que está en src/sys/sys_prerender.asm
 ;;   C0B0  .. 08 .. .. .. .. .. ..|.. .. .. .. .. .. .. ..|
 ;;  Los 2 sprites ocupan los 8 primeros bytes. Los 6 sprites que sobran se ocultan con SOLO su Y = 00 (cada 4 bytes); el resto de sus bytes sigue en EE. shadow_cursor = 08 (valía 14, pero la rutina lo pone a 00 al empezar).
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Ninguna entidad viva. La OAM sombra, llena de EE (32 bytes).

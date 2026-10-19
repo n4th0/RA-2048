@@ -42,11 +42,27 @@ ej05::   ;; = `sys_shot_update`, que está en src/sys/sys_shot.asm
     cp   SHOT_NONE              ;; \ Is there a shot?
     ret  z                      ;; / No: nothing to do
 
-    ;; ◉◉YOUR CODE◉◉
+    ld   a, [hl]
+    bit  CMP_ALIVE_BIT, a
+    jr   z, .forget
+
+    ld   a, l
+    add  a, E_KIND
+    ld   l, a
+    ld   a, [hl]
+    cp   KIND_SHOT
+    ret  z
+
+.forget
+    ld   a, SHOT_NONE           ;; FIX E2 (Tipo E - Errónea): Cambiado xor a (00) por ld a, SHOT_NONE (FF) para cumplir el CASO 2.
+    ld   [shot_entity], a
+    ret
+
+
     ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej05 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

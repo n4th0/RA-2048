@@ -39,14 +39,38 @@ SECTION "Ejercicio 10", ROM0
 ;; ⚠️ Use sys_collision_overlaps and man_entity_free
 ej10::   ;; = `sys_collision_one`, que está en src/sys/sys_collision.asm
     ;; ◉◉YOUR CODE◉◉
+
+ld a, [de]
+and CMP_COLLIDER
+ret z
+
+
+
     ld   hl, E_KIND             ;; \ HL = &candidate.KIND
     add  hl, de                 ;; |
     ld   a, [collision_mask]    ;; | A = collision_mask & candidate.KIND:
     and  [hl]                   ;; | is it a kind the probe collides with?
     ret  z                      ;; / No: ignore it
 
+    ld a, [collision_probe]
+    ld l, a
+    ld a, [collision_probe + 1]
+    ld h, a
+    push de
+    call sys_collision_overlaps
+    pop de
+    ret nz
+
+    ld a, [collision_hits]
+    cp 0
+    ret nz
+    inc a
+    ld [collision_hits], a
+    jp man_entity_free
+
+
     ;; ◉◉YOUR CODE◉◉
-    ret ;; ◀━REMOVE RET IF NEEDED
+    ; ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
 ;;  ENSAMBLA: ____  (SÍ / NO)

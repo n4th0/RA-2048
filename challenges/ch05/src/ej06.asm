@@ -38,8 +38,26 @@ SECTION "Ejercicio 06", ROM0
 ;; ❌ May modify A, B, DE, HL
 ;; ⚠️ Use memcpy8
 ej06::   ;; = `sys_prerender_one`, que está en src/sys/sys_prerender.asm
-    ;; ◉◉YOUR CODE◉◉
-    ret ;; ◀━REMOVE RET IF NEEDED
+
+
+    ld   a, [de]
+    and  CMP_SPRITE ; fix s 
+    ret  z
+
+    ld   hl, E_SPRITE
+    add  hl, de
+
+    ld   a, [shadow_cursor]; fix e shadow_cursor <> shadow_oam 
+    ld   e, a; fix e Esto monta DE = cursor·256 + 0. El byte bajo es el cursor y el alto es HIGH(shadow_oam): ld e, a y ld d, HIGH(shadow_oam).
+    ld   d, HIGH(shadow_oam); 
+
+    ld   b, 4                   
+    call memcpy8                
+
+    ld   a, e                   
+    ld   [shadow_cursor], a; fix e shadow_cursor + 1 d <> [shadow_cursor] e
+    ret
+
 
 ;; ==========================================================
 ;;  ENSAMBLA: ____  (SÍ / NO)

@@ -35,6 +35,13 @@ SECTION "Ejercicio 11a", ROM0
 ;; the game scene (scene_game). If not, do nothing.
 ;; ⚠️ Use input_pressed (the "edge") and scene_change
 ej11a::   ;; = `scene_menu_update`, que está en src/scn/scn_menu.asm
+
+    ld a, [input_pressed]
+    and BTN_START | BTN_A
+    ret z
+    ld hl, scene_game
+    call scene_change
+    ret
     ;; ◉◉YOUR CODE◉◉
     ret ;; ◀━REMOVE RET IF NEEDED
 
@@ -49,7 +56,25 @@ SECTION "Ejercicio 11b", ROM0
 ;; ⚠️ Use input_pressed (the "edge") and scene_change
 ej11b::   ;; = `scene_gameover_update`, que está en src/scn/scn_gameover.asm
     ;; ◉◉YOUR CODE◉◉
-    ret ;; ◀━REMOVE RET IF NEEDED
+
+    ld a, [input_pressed]
+    cp BTN_START
+    jr z, .start
+    cp BTN_A
+    ret nz
+    ld hl, scene_game
+    call scene_change
+
+    ret
+.start
+
+    ld hl, scene_menu
+    call scene_change
+    ret
+
+
+
+
 
 ;; ==========================================================
 ;;  ENSAMBLA: ____  (SÍ / NO)
