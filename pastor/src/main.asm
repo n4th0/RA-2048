@@ -9,7 +9,6 @@ SECTION "Entry point", ROM0[$150]
 
 main::
    di                       ;; sin interrupciones: sincronizamos leyendo rLY
-   ld sp, $E000             ;; pila al final de la WRAM, lejos de nuestras variables
 
    ;;--- Inicialización del hardware (una sola vez) ---
    call lcd_off
@@ -24,7 +23,8 @@ main::
    xor a                    ;; scroll a 0: no confiamos en lo que deje la boot ROM
    ld [rSCY], a
    ld [rSCX], a
-   ld [joypad_state], a     ;; la WRAM arranca con basura
+   ld [joypad_dpad], a      ;; la WRAM arranca con basura (sesión 03.1)
+   ld [joypad_buttons], a
    ld [joypad_pressed], a
 
    call record_load

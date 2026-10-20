@@ -2,19 +2,15 @@
 ;; levels.asm — Mapas de los niveles (datos en ROM)
 ;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
 ;;
-;; Cada nivel son 18 filas de 20 caracteres. CHARMAP traduce cada carácter
-;; a su índice de tile, así el nivel se edita como un dibujo:
+;; Cada nivel son 18 filas de 20 caracteres. CHARMAP (charmap.inc) traduce
+;; cada carácter a su índice de tile, así el nivel se edita como un dibujo:
 ;;    " " blanco (fila 0, reservada para el marcador)
 ;;    "." hierba     "#" valla     ":" suelo del corral
 ;; Pastor y ovejas NO van en el mapa: son entidades. Cada nivel tiene además
 ;; una lista de "spawns" con su posición inicial (ver level_1_spawns).
 ;;=============================================================================
 INCLUDE "constants.inc"
-
-CHARMAP " ", TILE_BLANK
-CHARMAP ".", TILE_GRASS
-CHARMAP "#", TILE_FENCE
-CHARMAP ":", TILE_CORRAL
+INCLUDE "charmap.inc"
 
 SECTION "Levels", ROM0
 
@@ -134,16 +130,16 @@ level_3_spawns::
    db END_OF_LIST
 
 ;;-----------------------------------------------------------------------------
-;; Tabla de niveles: mapa, spawns y tiempo en segundos (BCD de 3 dígitos).
+;; Tabla de niveles: mapa, spawns y tiempo en segundos (un dígito por byte).
 ;; Tiempos elegidos con el bot de tests/bot.py: tarda unos 35, 40 y 90 s en el
 ;; peor caso; una persona necesita bastante más margen.
 level_table::
    dw level_1, level_1_spawns
-   db $01, $20              ;; 120 s
+   db 1, 2, 0               ;; 120 s
    dw level_2, level_2_spawns
-   db $01, $50              ;; 150 s
+   db 1, 5, 0               ;; 150 s
    dw level_3, level_3_spawns
-   db $02, $10              ;; 210 s
+   db 2, 1, 0               ;; 210 s
 level_table_end:
 ASSERT level_table_end - level_table == NUM_LEVELS * LEVEL_ENTRY_SIZE, "level_table no cuadra con NUM_LEVELS"
 
@@ -152,9 +148,21 @@ ASSERT level_table_end - level_table == NUM_LEVELS * LEVEL_ENTRY_SIZE, "level_ta
 screen_frame::
    db "                    "
    db "####################"
-   REPT 15
    db "#..................#"
-   ENDR
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
+   db "#..................#"
    db "####################"
 screen_frame_end:
 ASSERT screen_frame_end - screen_frame == LEVEL_SIZE, "screen_frame no mide 20x18"

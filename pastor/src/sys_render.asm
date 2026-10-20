@@ -59,7 +59,7 @@ sys_render_update::
 ;; Modifica: A, F, B, DE, HL
 sys_render_flush::
    ld a, [render_queue_count]
-   or a
+   cp 0
    jr z, .done
    ld b, a
    ld hl, render_queue
@@ -90,13 +90,13 @@ render_queue_push::
    ld a, [render_queue_count]
    ld l, a
    add a                    ;; A = count * 2
-   add l                    ;; A = count * 3 (cabe en 8 bits: ver ASSERT)
-   ld hl, render_queue
+   add l                    ;; A = count * 3 (como mucho 48 * 3 = 144: cabe en 8 bits)
+   ld hl, render_queue      ;; HL = render_queue + count * 3 (16 bits: add + adc)
    add l
    ld l, a
-   adc h
-   sub l
-   ld h, a                  ;; HL = render_queue + count * 3
+   ld a, h
+   adc 0
+   ld h, a
    ld [hl], e
    inc hl
    ld [hl], d
@@ -115,36 +115,31 @@ sys_render_redraw_all::
    jp man_entity_for_each
 
 ;;-----------------------------------------------------------------------------
-;; tilemap_address_of: versión pública de tilemap_address.
-;; 📥 B = fila, C = columna  📤 HL = dirección en el tilemap
-;; Modifica: A, F, HL
-tilemap_address_of::
-   ;; sigue en tilemap_address
-
-;;-----------------------------------------------------------------------------
 ;; tilemap_address: dirección en el tilemap de la casilla (B, C).
 ;; Dirección = $9800 + fila * 32 + columna
 ;; 📥 B = fila, C = columna
 ;; 📤 HL = dirección
 ;; Modifica: A, F, HL
-tilemap_address:
+tilemap_address::
    ld h, 0
    ld l, b
-   add hl, hl
-   add hl, hl
-   add hl, hl
-   add hl, hl
-   add hl, hl               ;; HL = fila * 32 (fila <= 17: cabe de sobra)
-   ld a, l
-   or c                     ;; fila * 32 tiene los 5 bits bajos a 0: OR = suma
+   add hl, hl               ;; *2
+   add hl, hl               ;; *4
+   add hl, hl               ;; *8
+   add hl, hl               ;; *16
+   add hl, hl               ;; HL = fila * 32
+   ld a, l                  ;; HL += columna + $9800 (16 bits: add + adc)
+   add c
    ld l, a
    ld a, h
-   add HIGH(_SCRN0)         ;; $9800 tiene la parte baja a 0: basta sumar la alta
+   adc HIGH(_SCRN0)         ;; LOW(_SCRN0) es 0: en la parte baja no hay nada que sumar
    ld h, a
    ret
 
 ;;-----------------------------------------------------------------------------
 ;; load_position: lee 2 campos seguidos (fila, columna) de la entidad.
+;; Campo = base + desplazamiento. Como el array está alineado (ALIGN[8]),
+;; la parte alta es siempre D y solo hay que sumar a la baja.
 ;; 📥 DE = entidad, A = desplazamiento del primer campo (E_Y o E_OLD_Y)
 ;; 📤 B = fila, C = columna
 ;; Modifica: A, F, BC, HL
@@ -195,7 +190,7 @@ sys_render_queue_erase_moved:
 sys_render_queue_draw_moved:
    call has_moved
    ret z
-   ;; sigue en sys_render_queue_draw
+   jr sys_render_queue_draw
 
 ;;-----------------------------------------------------------------------------
 ;; sys_render_queue_draw: (para for_each) encola la entidad y anota dónde.
@@ -219,4 +214,3 @@ sys_render_queue_draw:
    pop af
    jp render_queue_push
 
-ASSERT QUEUE_MAX * QUEUE_ENTRY < 256, "la cola de render no cabe en 8 bits: render_queue_push dejaría de funcionar"

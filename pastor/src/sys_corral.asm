@@ -4,7 +4,7 @@
 ;;
 ;; Una oveja suelta que pisa suelo de corral pasa a TYPE_SHEEP_PENNED
 ;; (a partir de ahí la IA no la deja salir), descuenta sheep_left y suma
-;; POINTS_PER_SHEEP.
+;; 10 puntos.
 ;; Cuando sheep_left llega a 0, game_won = 1.
 ;;=============================================================================
 INCLUDE "constants.inc"
@@ -47,7 +47,7 @@ sys_corral_update::
    ld hl, sys_corral_one
    call man_entity_for_each
    ld a, [sheep_left]
-   or a
+   cp 0
    ret nz
    ld a, 1
    ld [game_won], a
@@ -80,8 +80,6 @@ sys_corral_one:
    ld [hl], TYPE_SHEEP_PENNED
    ld hl, sheep_left
    dec [hl]
-   ld hl, hud_dirty
-   set HUDB_SHEEP, [hl]
-   ld b, HIGH(POINTS_PER_SHEEP)
-   ld c, LOW(POINTS_PER_SHEEP)
-   jp score_add
+   ld hl, score + 4         ;; +10 puntos: sumar 1 al dígito de las decenas
+   ld a, 1
+   jp score_add_digit       ;; (también marca hud_dirty)

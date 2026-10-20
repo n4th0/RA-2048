@@ -40,12 +40,12 @@ level_load::
    dec b
    jr nz, .col
 
-   ld a, e                  ;; DE += MAP_STRIDE - SCREEN_W (suma de 16 bits a mano)
+   ld a, e                  ;; DE += 12: suma de 16 bits con add + adc (sesión 03.1)
    add MAP_STRIDE - SCREEN_W
    ld e, a
-   jr nc, .no_carry
-   inc d
-.no_carry:
+   ld a, d
+   adc 0                    ;; la parte alta recibe el acarreo
+   ld d, a
    dec c
    jr nz, .row
    ret
@@ -53,6 +53,7 @@ level_load::
 ;;-----------------------------------------------------------------------------
 ;; level_tile_at: tile de fondo de la casilla (B, C), leído de la copia en WRAM.
 ;; Dirección = level_map + fila * 20 + columna (fila * 20 = fila * 16 + fila * 4)
+;; `add hl, hl` es HL = HL + HL, es decir, multiplicar por 2.
 ;; 📥 B = fila, C = columna
 ;; 📤 A = tile, HL = su dirección en level_map
 ;; Modifica: A, F, DE, HL

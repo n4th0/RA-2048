@@ -1,19 +1,19 @@
 ;;=============================================================================
-;; text.inc — Charmap de los textos y macro para escribirlos centrados
+;; charmap.inc — Traducción de caracteres a índices de tile
 ;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
 ;;
-;; Incluir en los ficheros que escriben texto. Con este charmap, una cadena
-;; como "PULSA START" se ensambla directamente como índices de tile.
-;; Solo hay mayúsculas sin tildes, dígitos y espacio.
+;; Con CHARMAP, `db "PASTOR"` o `db "#..#"` se ensamblan directamente como
+;; índices de tile: los mapas y los textos se escriben como si fueran dibujos.
+;; Incluir DESPUÉS de constants.inc.
+;;   Mapas:  " " blanco  "." hierba  "#" valla  ":" corral
+;;   Textos: A..Z (sin tildes ni Ñ), 0..9 y espacio
 ;;=============================================================================
-IF !DEF(TEXT_INC)
-DEF TEXT_INC EQU 1
 
-INCLUDE "hardware.inc"
-INCLUDE "constants.inc"
-
-NEWCHARMAP text
 CHARMAP " ", TILE_BLANK
+CHARMAP ".", TILE_GRASS
+CHARMAP "#", TILE_FENCE
+CHARMAP ":", TILE_CORRAL
+
 CHARMAP "0", TILE_DIGIT_0 + 0
 CHARMAP "1", TILE_DIGIT_0 + 1
 CHARMAP "2", TILE_DIGIT_0 + 2
@@ -24,6 +24,7 @@ CHARMAP "6", TILE_DIGIT_0 + 6
 CHARMAP "7", TILE_DIGIT_0 + 7
 CHARMAP "8", TILE_DIGIT_0 + 8
 CHARMAP "9", TILE_DIGIT_0 + 9
+
 CHARMAP "A", TILE_FONT_A + 0
 CHARMAP "B", TILE_FONT_A + 1
 CHARMAP "C", TILE_FONT_A + 2
@@ -50,22 +51,3 @@ CHARMAP "W", TILE_FONT_A + 22
 CHARMAP "X", TILE_FONT_A + 23
 CHARMAP "Y", TILE_FONT_A + 24
 CHARMAP "Z", TILE_FONT_A + 25
-
-;;-----------------------------------------------------------------------------
-;; TEXT_CENTERED fila, "TEXTO"
-;; Escribe el texto centrado en la fila, DIRECTAMENTE en VRAM: solo con la
-;; pantalla apagada. La columna se calcula al ensamblar con STRLEN.
-;; El texto se guarda justo detrás del código y se salta con un jr.
-;; Modifica: A, F, DE, HL
-MACRO TEXT_CENTERED
-   ASSERT STRLEN(\2) <= SCREEN_W - 2, "texto demasiado largo: taparía la valla del marco"
-   ld hl, _SCRN0 + (\1) * MAP_STRIDE + (SCREEN_W - STRLEN(\2)) / 2
-   ld de, .text\@
-   call print_text
-   jr .end\@
-.text\@:
-   db \2, END_OF_LIST
-.end\@:
-ENDM
-
-ENDC

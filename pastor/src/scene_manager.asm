@@ -14,27 +14,14 @@ scene_id:: DS 1
 
 SECTION "Scene manager CODE", ROM0
 
-;; Rutina update de cada escena, en el orden de los SCENE_*
-scene_update_table:
-   dw scene_title_update
-   dw scene_game_update
-   dw scene_message_update
-scene_update_table_end:
-ASSERT scene_update_table_end - scene_update_table == 2 * (SCENE_MESSAGE + 1), "falta una escena en la tabla"
-
 ;;-----------------------------------------------------------------------------
 ;; scene_manager_update: ejecuta un frame de la escena activa.
 ;; Llamar una vez por frame, justo después de wait_vblank.
+;; Los jp son tail-calls (sesión 05.2): el ret de la escena vuelve al bucle.
 scene_manager_update::
    ld a, [scene_id]
-   add a                    ;; 2 bytes por entrada
-   ld hl, scene_update_table
-   add l
-   ld l, a
-   adc h
-   sub l
-   ld h, a
-   ld a, [hl+]
-   ld h, [hl]
-   ld l, a                  ;; HL = rutina de la escena
-   jp hl                    ;; tail-call: su ret vuelve al bucle principal
+   cp SCENE_TITLE
+   jp z, scene_title_update
+   cp SCENE_GAME
+   jp z, scene_game_update
+   jp scene_message_update  ;; SCENE_MESSAGE

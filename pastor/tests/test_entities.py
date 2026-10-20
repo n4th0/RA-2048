@@ -105,7 +105,7 @@ def test_vblank_worst_case_with_full_hud_on_level_3(game):
         addr = base + e.index * SIZEOF_ENTITY
         game.gb.memory[addr + E_OLD_Y] = 4
         game.gb.memory[addr + E_OLD_X] = 2
-    game.gb.memory[game.sym["hud_dirty"]] = 0b111
+    game.gb.memory[game.sym["hud_dirty"]] = 1
     lines = []
     game.gb.hook_register(0, game.sym["sys_render_flush.done"], lambda _: lines.append(game.gb.memory[LY]), None)
     game.gb.tick(3)

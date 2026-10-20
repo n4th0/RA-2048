@@ -5,12 +5,10 @@
 ;; Muestra un título (NIVEL SUPERADO, TIEMPO AGOTADO, ENHORABUENA), los
 ;; puntos y el récord. START continúa según after_message.
 ;;=============================================================================
-INCLUDE "text.inc"
+INCLUDE "hardware.inc"
+INCLUDE "constants.inc"
+INCLUDE "charmap.inc"
 
-DEF TITLE_ROW       EQU 5
-DEF SCORE_ROW       EQU 9
-DEF RECORD_ROW      EQU 11
-DEF NEW_RECORD_ROW  EQU 13
 DEF MIN_SHOW_FRAMES EQU 30   ;; ignora START al principio: si no, un toque
                              ;; tardío del juego se saltaría el mensaje
 
@@ -22,60 +20,49 @@ SECTION "Scene message CODE", ROM0
 
 ;;-----------------------------------------------------------------------------
 ;; scene_message_enter: dibuja el mensaje y pasa a esta escena.
-;; 📥 HL = título (acabado en END_OF_LIST, como mucho 18 letras para no tapar la valla)
-;;    B = qué hacer con START (AFTER_MESSAGE_NEXT_LEVEL / _TITLE)
+;; 📥 HL = dónde escribir el título en el tilemap (ya centrado por quien llama)
+;;    DE = título (acabado en END_OF_LIST)
+;;    B  = qué hacer con START (AFTER_MESSAGE_NEXT_LEVEL / _TITLE)
 scene_message_enter::
    ld a, b
    ld [after_message], a
+   push de
    push hl
    call lcd_off
    call sys_render_reset
    ld hl, screen_frame
    call level_load
-   pop de                   ;; DE = título
+   pop hl
+   pop de
+   call print_text          ;; el título
 
-   ;; Centrado en tiempo de ejecución: el texto llega en un registro
-   ld h, d
-   ld l, e
-   ld c, 0
-.measure:
-   ld a, [hl+]
-   cp END_OF_LIST
-   jr z, .measured
-   inc c
-   jr .measure
-.measured:
-   ld a, SCREEN_W
-   sub c
-   srl a                    ;; columna = (20 - longitud) / 2
-   ld hl, _SCRN0 + TITLE_ROW * MAP_STRIDE
-   add l
-   ld l, a                  ;; fila * 32 + col < 256 por encima de la base: sin acarreo
-   call print_text
-
-   ld hl, _SCRN0 + SCORE_ROW * MAP_STRIDE + 3
+   ld hl, _SCRN0 + 9 * MAP_STRIDE + 3     ;; "PUNTOS " y 6 dígitos (13): columna 3
    ld de, text_points
    call print_text
    ld de, score
-   ld b, SCORE_BYTES
-   call print_bcd
+   ld b, SCORE_DIGITS
+   call print_digits
 
-   ld hl, _SCRN0 + RECORD_ROW * MAP_STRIDE + 3
+   ld hl, _SCRN0 + 11 * MAP_STRIDE + 3    ;; "RECORD " y 6 dígitos
    ld de, text_record
    call print_text
    ld de, record
-   ld b, SCORE_BYTES
-   call print_bcd
+   ld b, SCORE_DIGITS
+   call print_digits
 
    ld a, [after_message]    ;; "NUEVO RECORD" solo al acabar la partida
    cp AFTER_MESSAGE_TITLE
    jr nz, .no_record
    ld a, [new_record]
-   or a
+   cp 0
    jr z, .no_record
-   TEXT_CENTERED NEW_RECORD_ROW, "NUEVO RECORD"
+   ld hl, _SCRN0 + 13 * MAP_STRIDE + 4    ;; "NUEVO RECORD" (12): columna 4
+   ld de, text_new_record
+   call print_text
 .no_record:
-   TEXT_CENTERED 15, "PULSA START"
+   ld hl, _SCRN0 + 15 * MAP_STRIDE + 4    ;; "PULSA START" (11): columna 4
+   ld de, text_press_start_msg
+   call print_text
 
    ld a, MIN_SHOW_FRAMES
    ld [show_timer], a
@@ -84,8 +71,6 @@ scene_message_enter::
    ld [scene_id], a
    ret
 
-ASSERT LOW(_SCRN0 + TITLE_ROW * MAP_STRIDE) + SCREEN_W < 256, "el centrado del título necesitaría acarreo"
-
 ;;-----------------------------------------------------------------------------
 ;; scene_message_update: espera a START y sigue.
 scene_message_update::
@@ -93,13 +78,13 @@ scene_message_update::
    call joypad_read
    ld hl, show_timer
    ld a, [hl]
-   or a
+   cp 0
    jr z, .accept
    dec [hl]
    ret
 .accept:
    ld a, [joypad_pressed]
-   bit PADB_START, a
+   bit BTN_START, a
    ret z
    ld a, [after_message]
    cp AFTER_MESSAGE_NEXT_LEVEL
@@ -108,3 +93,7 @@ scene_message_update::
 
 text_points:
    db "PUNTOS ", END_OF_LIST
+text_new_record:
+   db "NUEVO RECORD", END_OF_LIST
+text_press_start_msg:
+   db "PULSA START", END_OF_LIST

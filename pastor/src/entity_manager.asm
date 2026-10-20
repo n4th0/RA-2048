@@ -1,20 +1,17 @@
-;;=============================================================================
-;; entity_manager.asm — Gestor de entidades del motor ECS
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
+
 ;; Las entidades viven en un array de MAX_ENTITIES structs de SIZEOF_ENTITY
 ;; bytes. Los sistemas solo saben procesar UNA entidad; el gestor es quien
 ;; sabe recorrerlas todas (man_entity_for_each).
-;;=============================================================================
 INCLUDE "constants.inc"
 
-;; ALIGN[8]: el array empieza en $xx00. Así, para avanzar de una entidad a la
-;; siguiente basta con sumar a E: D nunca cambia mientras el array quepa en 256.
+;; ALIGN[8]: el array empieza en $xx00. Como ocupa
+;; menos de 256 bytes, la parte alta de la dirección no cambia nunca: para
+;; pasar de una entidad a la siguiente basta con sumar a la parte baja.
 SECTION "Entities", WRAM0, ALIGN[8]
 entity_array:: DS MAX_ENTITIES * SIZEOF_ENTITY
-entity_array_end:
 
-ASSERT MAX_ENTITIES * SIZEOF_ENTITY <= 256, "el array de entidades no cabe en 256 bytes: for_each dejaría de funcionar"
+SECTION "Entity Manager state", WRAM0
+for_each_routine: DS 2       ;; rutina que está llamando man_entity_for_each
 
 SECTION "Entity Manager CODE", ROM0
 
@@ -41,89 +38,98 @@ man_entity_alloc::
    ld b, MAX_ENTITIES
 .find:
    ld a, [de]               ;; E_ACTIVE es el campo 0
-   or a
+   cp 0
    jr z, .found
-   ld a, e
+   ld a, e                  ;; siguiente entidad (solo cambia la parte baja)
    add SIZEOF_ENTITY
    ld e, a
    dec b
    jr nz, .find
-   scf                      ;; lleno: lo indica el carry
+   scf                      ;; lleno: lo indicamos con el carry a 1
    ret
 .found:
    push de
    ld a, 1
    ld [de], a               ;; E_ACTIVE = 1
    inc de
-   xor a
+   xor a                    ;; A = 0 (y carry a 0: lo devolvemos así)
    ld b, SIZEOF_ENTITY - 1
 .clear_fields:
    ld [de], a
    inc de
    dec b
    jr nz, .clear_fields
-   pop de                   ;; xor a dejó carry a 0: éxito
+   pop de
    ret
 
 ;;-----------------------------------------------------------------------------
 ;; man_entity_for_each: llama a una rutina por cada entidad activa.
+;; La SM83 no tiene "call hl", así que se simula como en la sesión 06.1:
+;; se mete en la pila la dirección de vuelta y se salta con jp hl. El ret
+;; de la rutina vuelve a .back.
 ;; 📥 HL = rutina. La recibe con DE = entidad y puede modificar cualquier
-;;        registro: aquí se guardan BC, DE y HL antes de llamarla.
-;; Modifica: A, F, BC, DE
+;;        registro: aquí se guardan BC y DE antes de llamarla.
+;; ⚠️ La rutina NO puede llamar a su vez a man_entity_for_each (pisaría
+;;    for_each_routine).
+;; Modifica: A, F, BC, DE, HL
 man_entity_for_each::
+   ld a, l                  ;; guardar la rutina: HL lo necesitamos para saltar
+   ld [for_each_routine], a
+   ld a, h
+   ld [for_each_routine + 1], a
+
    ld de, entity_array
    ld b, MAX_ENTITIES
 .loop:
    ld a, [de]               ;; ¿E_ACTIVE?
-   or a
+   cp 0
    jr z, .next
    push bc
    push de
+   ld hl, .back             ;; 1) apuntar la vuelta en la pila
    push hl
-   call .call_hl            ;; la SM83 no tiene "call hl": se simula (sesión 06.1)
-   pop hl
+   ld a, [for_each_routine] ;; 2) HL = rutina
+   ld l, a
+   ld a, [for_each_routine + 1]
+   ld h, a
+   jp hl                    ;; 3) saltar (su ret vuelve a .back)
+.back:
    pop de
    pop bc
 .next:
-   ld a, e
+   ld a, e                  ;; siguiente entidad
    add SIZEOF_ENTITY
    ld e, a
    dec b
    jr nz, .loop
    ret
-.call_hl:
-   jp hl                    ;; la dirección de vuelta ya está en la pila por el call
 
 ;;-----------------------------------------------------------------------------
 ;; man_entity_at: ¿hay alguna entidad activa en la casilla (B, C)?
-;; Recorre el array directamente (sin for_each) para poder salir en cuanto
-;; encuentra una.
 ;; 📥 B = fila, C = columna
-;; 📤 carry a 1 si está ocupada (HL = esa entidad), carry a 0 si está libre
+;; 📤 carry a 1 si está ocupada, carry a 0 si está libre
 ;; Modifica: A, F, E, HL
 man_entity_at::
    ld hl, entity_array
    ld e, MAX_ENTITIES
 .check:
    ld a, [hl]               ;; E_ACTIVE
-   or a
+   cp 0
    jr z, .next
-   inc l                    ;; E_TYPE
-   inc l                    ;; E_Y (inc l basta: el array no cruza un bloque de 256)
-   ld a, [hl+]              ;; A = E_Y, HL -> E_X
-   cp b
-   jr nz, .rewind
-   ld a, [hl]               ;; E_X
-   cp c
-   jr nz, .rewind
-   ld a, l                  ;; ocupada: HL vuelve al inicio de la entidad
-   sub E_X
+   ld a, l                  ;; HL = &E_Y de esta entidad
+   add E_Y
    ld l, a
-   scf
+   ld a, [hl+]              ;; A = E_Y, y HL pasa a apuntar a E_X
+   cp b
+   jr nz, .back
+   ld a, [hl]               ;; A = E_X
+   cp c
+   jr nz, .back
+   scf                      ;; misma fila y misma columna: ocupada
    ret
-.rewind:
-   ld a, l                  ;; HL apunta a E_Y o E_X: volvemos al inicio
-   and ~(SIZEOF_ENTITY - 1) ;; vale porque SIZEOF_ENTITY es potencia de 2
+.back:
+   ld a, l                  ;; HL apunta a E_X: volver al inicio de la entidad
+   sub E_X
    ld l, a
 .next:
    ld a, l
@@ -131,7 +137,5 @@ man_entity_at::
    ld l, a
    dec e
    jr nz, .check
-   and a                    ;; libre: carry a 0
+   xor a                    ;; libre: carry a 0
    ret
-
-ASSERT SIZEOF_ENTITY == 8, "man_entity_at asume SIZEOF_ENTITY potencia de 2 (8)"

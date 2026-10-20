@@ -7,7 +7,6 @@
 ;; Si se pulsan varias direcciones a la vez gana una (derecha, izquierda,
 ;; arriba, abajo): en una cuadrícula no hay diagonales.
 ;;=============================================================================
-INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 
 SECTION "Input system CODE", ROM0
@@ -36,7 +35,7 @@ sys_input_one:
    add e
    ld l, a
    ld a, [hl]
-   or a
+   cp 0
    jr z, .ready
    dec [hl]
    ret
@@ -49,14 +48,14 @@ sys_input_one:
    inc l
    ld c, [hl]
 
-   ld a, [joypad_state]     ;; B, C = casilla destino según la dirección
-   bit PADB_RIGHT, a
+   ld a, [joypad_dpad]      ;; B, C = casilla destino según la dirección
+   bit PAD_RIGHT, a
    jr nz, .right
-   bit PADB_LEFT, a
+   bit PAD_LEFT, a
    jr nz, .left
-   bit PADB_UP, a
+   bit PAD_UP, a
    jr nz, .up
-   bit PADB_DOWN, a
+   bit PAD_DOWN, a
    ret z                    ;; ninguna dirección: quieto
    inc b
    jr .try_move

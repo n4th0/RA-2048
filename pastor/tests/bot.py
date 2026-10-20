@@ -163,7 +163,7 @@ if __name__ == "__main__":
     shots: list = [] if len(sys.argv) > 1 else None
     per_level = play_game(g, shots)
     print("segundos por nivel:", [round(s, 1) for s in per_level],
-          "| escena final:", g.var("scene_id"), "| puntos:", g.bcd("score", 3))
+          "| escena final:", g.var("scene_id"), "| puntos:", g.number("score", 6))
     if shots:
         big = [s.resize((320, 288), Image.NEAREST) for s in shots[::2]]
         big[0].save(sys.argv[1], save_all=True, append_images=big[1:], duration=60, loop=0)

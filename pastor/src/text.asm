@@ -1,12 +1,16 @@
 ;;=============================================================================
-;; text.asm — Escritura de textos y números BCD en el tilemap
+;; text.asm — Escritura de textos y números en el tilemap
 ;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
 ;;
+;; Los textos son listas de tiles acabadas en el centinela END_OF_LIST
+;; (charmap.inc traduce las letras a tiles al ensamblar).
+;; Los números son un dígito por byte (ver score.asm).
+;;
 ;; Dos variantes de cada rutina:
-;;  - directa (print_*): escribe en VRAM ya. Solo con la pantalla apagada.
-;;  - en cola (queue_*): pasa por la cola de render, se puede usar en juego.
+;;  - print_*: escribe en VRAM ya. Solo con la pantalla apagada.
+;;  - queue_*: pasa por la cola de render; se puede usar en pleno juego.
 ;;=============================================================================
-INCLUDE "text.inc"
+INCLUDE "constants.inc"
 
 SECTION "Text CODE", ROM0
 
@@ -14,6 +18,7 @@ SECTION "Text CODE", ROM0
 ;; print_text: copia un texto acabado en END_OF_LIST a VRAM.
 ;; ⚠️ Pantalla apagada.
 ;; 📥 HL = dirección en el tilemap, DE = texto
+;; 📤 HL queda justo detrás del texto (para escribir algo a continuación)
 ;; Modifica: A, F, DE, HL
 print_text::
    ld a, [de]
@@ -24,39 +29,30 @@ print_text::
    jr print_text
 
 ;;-----------------------------------------------------------------------------
-;; print_bcd: escribe B bytes BCD (2 dígitos cada uno, el más significativo
-;; primero) en VRAM.
+;; print_digits: escribe B dígitos (un byte cada uno) en VRAM.
 ;; ⚠️ Pantalla apagada.
-;; 📥 HL = dirección en el tilemap, DE = primer byte, B = número de bytes
-;; Modifica: A, F, B, C, DE, HL
-print_bcd::
+;; 📥 HL = dirección en el tilemap, DE = primer dígito, B = cuántos
+;; Modifica: A, F, B, DE, HL
+print_digits::
    ld a, [de]
-   ld c, a
-   swap a                   ;; decenas: el nibble alto
-   and $0F
-   add TILE_DIGIT_0
-   ld [hl+], a
-   ld a, c                  ;; unidades: el nibble bajo
-   and $0F
    add TILE_DIGIT_0
    ld [hl+], a
    inc de
    dec b
-   jr nz, print_bcd
+   jr nz, print_digits
    ret
 
 ;;-----------------------------------------------------------------------------
 ;; queue_text: encola un texto acabado en END_OF_LIST.
-;; Para mostrar o cambiar texto con la pantalla encendida.
 ;; 📥 HL = dirección en el tilemap, DE = texto
-;; Modifica: A, F, BC, DE, HL
+;; Modifica: A, F, DE, HL
 queue_text::
    ld a, [de]
    cp END_OF_LIST
    ret z
    push de
    push hl
-   call render_queue_push
+   call render_queue_push   ;; pisa DE y HL: por eso los guardamos
    pop hl
    pop de
    inc hl
@@ -78,31 +74,19 @@ queue_blank::
    ret
 
 ;;-----------------------------------------------------------------------------
-;; queue_bcd: como print_bcd pero por la cola.
-;; 📥 HL = dirección en el tilemap, DE = primer byte, B = número de bytes
-;; Modifica: A, F, BC, DE, HL
-queue_bcd::
+;; queue_digits: como print_digits, pero por la cola.
+;; 📥 HL = dirección en el tilemap, DE = primer dígito, B = cuántos
+;; Modifica: A, F, B, DE, HL
+queue_digits::
    ld a, [de]
-   ld c, a
-   swap a
-   and $0F
    add TILE_DIGIT_0
-   call .push_digit
-   ld a, c
-   and $0F
-   add TILE_DIGIT_0
-   call .push_digit
-   inc de
-   dec b
-   jr nz, queue_bcd
-   ret
-.push_digit:                ;; render_queue_push pisa DE y HL: los guardamos
-   push bc
    push de
    push hl
    call render_queue_push
    pop hl
    pop de
-   pop bc
    inc hl
+   inc de
+   dec b
+   jr nz, queue_digits
    ret

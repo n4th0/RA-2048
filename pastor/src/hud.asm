@@ -2,24 +2,26 @@
 ;; hud.asm — Marcador de la fila 0:  N1 T120 001230   [oveja]05
 ;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
 ;;
-;; Quien cambia un dato activa su bit en hud_dirty, y hud_update (una vez por
-;; frame) encola solo lo que ha cambiado. Así, si se encierran dos ovejas en
-;; el mismo frame, los dígitos no se encolan dos veces.
+;; Quien cambie el tiempo, los puntos o las ovejas pone hud_dirty = 1, y
+;; hud_update (una vez por frame) repinta los números. Así, si se encierran
+;; dos ovejas en el mismo frame, el marcador se encola una sola vez.
 ;;=============================================================================
-INCLUDE "text.inc"
+INCLUDE "hardware.inc"
+INCLUDE "constants.inc"
+INCLUDE "charmap.inc"
 
-DEF HUD_LEVEL       EQU _SCRN0 + 0
-DEF HUD_TIME        EQU _SCRN0 + 3
-DEF HUD_SCORE       EQU _SCRN0 + 8
-DEF HUD_SHEEP_ICON  EQU _SCRN0 + SCREEN_W - 3
-DEF HUD_SHEEP_COUNT EQU _SCRN0 + SCREEN_W - 2
+;; Posiciones en la fila 0 (dirección = $9800 + columna)
+DEF HUD_LEVEL       EQU _SCRN0 + 0    ;; "N" y el número de nivel
+DEF HUD_TIME        EQU _SCRN0 + 3    ;; "T" y 3 dígitos
+DEF HUD_SCORE       EQU _SCRN0 + 8    ;; 6 dígitos
+DEF HUD_SHEEP_ICON  EQU _SCRN0 + 17   ;; icono de oveja
+DEF HUD_SHEEP_COUNT EQU _SCRN0 + 18   ;; 2 dígitos
 
-;; Tiles que puede encolar el marcador en un frame: hud_init los encola todos
-DEF HUD_INIT_TILES EQU 2 + 4 + SCORE_BYTES * 2 + 3
-ASSERT HUD_INIT_TILES <= HUD_MAX_TILES, "el marcador no cabe en su parte de la cola de render"
+;; hud_init encola 4 tiles fijos + hud_update 11 números = 15 <= HUD_MAX_TILES
 
 SECTION "HUD state", WRAM0
-hud_dirty:: DS 1             ;; bits HUDB_*: qué repintar en el siguiente hud_update
+hud_dirty::  DS 1            ;; 1 = repintar los números en el próximo hud_update
+sheep_digits: DS 2           ;; sheep_left convertido a 2 dígitos
 
 SECTION "HUD CODE", ROM0
 
@@ -50,54 +52,34 @@ hud_init::
    ld a, TILE_SHEEP
    call render_queue_push
 
-   ld a, HUDF_ALL
+   ld a, 1                  ;; y los números
    ld [hud_dirty], a
-   ;; sigue en hud_update
+   jr hud_update
 
 ;;-----------------------------------------------------------------------------
-;; hud_update: encola lo marcado en hud_dirty y lo limpia.
+;; hud_update: si hud_dirty = 1, encola tiempo, puntos y ovejas.
 ;; Llamar una vez por frame, antes de sys_render_update.
 ;; Modifica: A, F, BC, DE, HL
 hud_update::
-   ld hl, hud_dirty
-   bit HUDB_TIME, [hl]
-   jr z, .score
-   ld a, [time_left]        ;; 3 dígitos: del byte alto solo las unidades
-   and $0F
-   add TILE_DIGIT_0
-   ld hl, HUD_TIME + 1
-   call render_queue_push
-   ld hl, HUD_TIME + 2
-   ld de, time_left + 1
-   ld b, 1
-   call queue_bcd
-
-.score:
-   ld hl, hud_dirty
-   bit HUDB_SCORE, [hl]
-   jr z, .sheep
-   ld hl, HUD_SCORE
-   ld de, score
-   ld b, SCORE_BYTES
-   call queue_bcd
-
-.sheep:
-   ld hl, hud_dirty
-   bit HUDB_SHEEP, [hl]
-   jr z, .done
-   call queue_sheep_left
-
-.done:
+   ld a, [hud_dirty]
+   cp 0
+   ret z
    xor a
    ld [hud_dirty], a
-   ret
 
-;;-----------------------------------------------------------------------------
-;; queue_sheep_left: encola los 2 dígitos de sheep_left (binario, 0..99).
-;; Modifica: A, F, BC, DE, HL
-queue_sheep_left:
+   ld hl, HUD_TIME + 1
+   ld de, time_left
+   ld b, TIME_DIGITS
+   call queue_digits
+
+   ld hl, HUD_SCORE
+   ld de, score
+   ld b, SCORE_DIGITS
+   call queue_digits
+
+   ;; sheep_left (0..99) a 2 dígitos: decenas = cuántas veces cabe 10
    ld a, [sheep_left]
-   ld b, TILE_DIGIT_0       ;; B = tile de las decenas
+   ld b, 0                  ;; B = decenas
 .tens:
    cp 10
    jr c, .units
@@ -105,14 +87,11 @@ queue_sheep_left:
    inc b
    jr .tens
 .units:
-   add TILE_DIGIT_0
-   ld c, a                  ;; C = tile de las unidades
-
-   push bc
-   ld hl, HUD_SHEEP_COUNT
+   ld [sheep_digits + 1], a ;; lo que queda son las unidades
    ld a, b
-   call render_queue_push
-   pop bc
-   ld hl, HUD_SHEEP_COUNT + 1
-   ld a, c
-   jp render_queue_push
+   ld [sheep_digits], a
+
+   ld hl, HUD_SHEEP_COUNT
+   ld de, sheep_digits
+   ld b, 2
+   jp queue_digits

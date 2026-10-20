@@ -74,10 +74,9 @@ class Game:
         self.gb.button_release(button)
         self.gb.tick(3)
 
-    def bcd(self, name: str, size: int = 1) -> int:
-        """Lee una variable BCD como número decimal (score, time_left...)."""
-        digits = "".join(f"{self.gb.memory[self.sym[name] + i]:02x}" for i in range(size))
-        return int(digits)
+    def number(self, name: str, digits: int) -> int:
+        """Lee un número guardado con un dígito por byte (score, time_left...)."""
+        return int("".join(str(self.gb.memory[self.sym[name] + i]) for i in range(digits)))
 
     def text_at(self, y: int, x: int, length: int) -> str:
         """Lee de la pantalla un texto escrito con la fuente del juego."""

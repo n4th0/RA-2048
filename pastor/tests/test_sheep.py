@@ -136,7 +136,7 @@ def test_long_random_play_keeps_world_consistent(game):
 
 
 @pytest.mark.parametrize("level", [0, 1, 2])
-@pytest.mark.parametrize("seed", [(17, 99), (200, 3)])
+@pytest.mark.parametrize("seed", [17, 200])
 def test_bot_can_win_every_level_in_time(level, seed):
     """Un bot que solo usa la cruceta gana cada nivel dentro de su tiempo.
 
@@ -147,8 +147,8 @@ def test_bot_can_win_every_level_in_time(level, seed):
     from conftest import Game
     g = Game()
     g.goto_level(level)
-    g.gb.memory[g.sym["rng_state"]], g.gb.memory[g.sym["rng_state"] + 1] = seed
-    limit = g.bcd("time_left", 2)
+    g.gb.memory[g.sym["rng_state"]] = seed
+    limit = g.number("time_left", 3)
     used = bot.play_level(g) / 60
     won, left = g.var("game_won"), g.var("sheep_left")
     g.stop()

@@ -29,14 +29,14 @@ wait_vblank::
 ;; por eso esperamos al VBLANK antes.
 ;; Si ya está apagada no hace nada: con el LCD apagado rLY se queda en 0
 ;; y wait_vblank esperaría para siempre.
-;; Modifica: A, F, HL
+;; Modifica: A, F
 lcd_off::
    ld a, [rLCDC]
-   bit 7, a
+   bit 7, a                 ;; bit 7 = pantalla encendida
    ret z
    call wait_vblank
-   ld hl, rLCDC
-   res 7, [hl]              ;; bit 7 = pantalla encendida
+   xor a                    ;; rLCDC = 0: pantalla apagada (lcd_on lo vuelve a configurar todo)
+   ld [rLCDC], a
    ret
 
 ;;-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ memcpy::
    ld [de], a
    inc de
    dec bc
-   ld a, b                  ;; dec bc no actualiza flags: comprobamos BC == 0 a mano
-   or c
+   ld a, b                  ;; dec bc no actualiza flags: comprobamos BC == 0 a mano.
+   or c                     ;; B OR C solo da 0 si B y C valen 0 a la vez
    jr nz, memcpy
    ret
