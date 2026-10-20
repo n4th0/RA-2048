@@ -1,8 +1,0 @@
-/obj
-/*.gb
-/*.sav
-
-# Tests
-__pycache__/
-.pytest_cache/
-tests/
