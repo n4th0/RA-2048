@@ -1,0 +1,146 @@
+; Generated: every section keeps the address it has in the complete game.
+; The binary routines have absolute addresses inside: do not change this file.
+ROM0
+	org $0000
+	"System: physics"
+	org $009E
+	"Entity manager"
+	org $0188
+	"Level maps"
+	org $0D88
+	"Graphics data"
+	org $16C8
+	"Sound Driver"
+	org $1E58
+	"Game rules"
+	org $2003
+	"HUD"
+	org $2075
+	"Scene: menu"
+	org $20DF
+	"System: prerender"
+	org $2142
+	"System: collision"
+	org $219B
+	"Scene: game"
+	org $21F3
+	"System: animation"
+	org $224B
+	"Game: entity templates"
+	org $229B
+	"Map manager"
+	org $22E1
+	"Scene: win"
+	org $2325
+	"Scene: game over"
+	org $2366
+	"System: sword"
+	org $23A5
+	"System: camera"
+	org $23DE
+	"Game: levels"
+	org $2417
+	"Engine: random"
+	org $244B
+	"System: ai"
+	org $2478
+	"Engine: joypad"
+	org $24A2
+	"System: input"
+	org $24CC
+	"Engine: graphics"
+	org $24F5
+	"Scene manager"
+	org $251D
+	"Engine: sound"
+	org $2544
+	"Engine: screen"
+	org $2562
+	"Engine: memory"
+	org $257E
+	"Engine: DMA"
+	org $2597
+	"System: render"
+	org $25AA
+	"Scenes: text screens"
+	org $25BC
+	"Engine: OAM"
+	org $25CE
+	"System: selfdestroy"
+	org $25E0
+	"Sound effects"
+	org $25EC
+	"Engine: text"
+	org $25F6
+	"Engine: frame"
+	org $2800
+	"Ref ej01"
+	org $2900
+	"Ref ej02"
+	org $2A00
+	"Ref ej03"
+	org $2B00
+	"Ref ej04"
+	org $2C00
+	"Ref ej05a"
+	org $2D00
+	"Ref ej05b"
+	org $2E00
+	"Ref ej06"
+	org $2F00
+	"Ref ej07"
+	org $3000
+	"Ref ej08"
+	org $3100
+	"Ref ej09"
+	org $3200
+	"Ref ej10"
+	org $3300
+	"Ref ej11"
+	org $3400
+	"Ref ej12"
+ROMX 1
+	org $4000
+	"Song: level 1"
+	org $45AE
+	"Song: level 3"
+	org $4B5C
+	"Song: title"
+	org $510A
+	"Song: level 2"
+	org $56B8
+	"Song: game over"
+	org $5AE6
+	"Song: win"
+WRAM0
+	org $C000
+	"Entity array"
+	org $C0C0
+	"Game data"
+	org $C0C4
+	"Collision data"
+	org $C0C7
+	"Map data"
+	org $C0C9
+	"Scene data"
+	org $C0CB
+	"Random data"
+	org $C0CD
+	"Joypad data"
+	org $C0CF
+	"Camera data"
+	org $C0D1
+	"HUD data"
+	org $C0D2
+	"Frame data"
+	org $C0D3
+	"Prerender data"
+	org $C0D4
+	"Sword data"
+	org $C100
+	"OAM data"
+	org $C1A0
+	"Playback variables"
+HRAM
+	org $FF80
+	"HRAM: DMA routine"
