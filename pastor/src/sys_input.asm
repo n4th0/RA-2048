@@ -88,4 +88,16 @@ sys_input_one:
    add e
    ld l, a
    ld [hl], SHEPHERD_STEP_FRAMES - 1   ;; -1: el frame del paso también cuenta
+
+   ;; Alterna la pose en cada paso; el renderizador ya repinta al moverse.
+   ld a, E_TILE
+   add e
+   ld l, a
+   ld a, [hl]
+   cp TILE_SHEPHERD
+   ld a, TILE_SHEPHERD
+   jr z, .set_pose
+   ld a, TILE_SHEPHERD_STEP
+.set_pose:
+   ld [hl], a
    ret

@@ -17,6 +17,9 @@ time_left::     DS TIME_DIGITS ;; segundos que quedan, un dígito por byte
 frame_count:    DS 1           ;; frames hasta el siguiente segundo
 paused::        DS 1
 win_timer:      DS 1           ;; frames de espera tras ganar, antes del mensaje
+win_anim_timer: DS 1
+win_anim_state: DS 1
+sheep_pose_tile: DS 1
 
 SECTION "Scene game CODE", ROM0
 
@@ -71,6 +74,10 @@ scene_game_enter_level::
    ld [paused], a
    ld a, WIN_DELAY_FRAMES
    ld [win_timer], a
+   ld a, 10
+   ld [win_anim_timer], a
+   ld a, 1
+   ld [win_anim_state], a
 
    call hud_init
    call sys_render_flush    ;; marcador a VRAM ya (pantalla apagada)
@@ -189,11 +196,49 @@ scene_game_update::
 
 .won:
    call hud_update          ;; que se vea el último punto y el 00
+   ld hl, win_anim_timer
+   dec [hl]
+   jr nz, .win_anim_done
+   ld [hl], 10
+   ld a, [win_anim_state]
+   xor 1
+   ld [win_anim_state], a
+   call scene_game_set_sheep_pose
+.win_anim_done:
    call sys_render_update
    ld hl, win_timer
    dec [hl]
    ret nz
    jp level_won
+
+;; Alterna la pose de todas las ovejas encerradas durante la celebración.
+scene_game_set_sheep_pose:
+   ld a, [win_anim_state]
+   and a
+   jr z, .normal
+   ld a, TILE_SHEEP_HAPPY
+   jr .set
+.normal:
+   ld a, TILE_SHEEP
+.set:
+   ld [sheep_pose_tile], a
+   ld hl, scene_game_set_sheep_pose_one
+   jp man_entity_for_each
+
+scene_game_set_sheep_pose_one:
+   ld h, d
+   ld a, E_TYPE
+   add e
+   ld l, a
+   ld a, [hl]
+   cp TYPE_SHEEP_PENNED
+   ret nz
+   ld a, E_TILE
+   add e
+   ld l, a
+   ld a, [sheep_pose_tile]
+   ld [hl], a
+   jp sys_render_queue_draw
 
 ;;-----------------------------------------------------------------------------
 ;; sys_timer_update: descuenta un segundo cada FRAMES_PER_SECOND frames.

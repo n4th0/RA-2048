@@ -24,7 +24,9 @@ DEF TILE_GRASS    RB 1   ;; hierba del prado
 DEF TILE_FENCE    RB 1   ;; valla (bloquea el paso)
 DEF TILE_CORRAL   RB 1   ;; suelo de paja del corral
 DEF TILE_SHEPHERD RB 1   ;; pastor
+DEF TILE_SHEPHERD_STEP RB 1 ;; pastor con las piernas en otra posición
 DEF TILE_SHEEP    RB 1   ;; oveja
+DEF TILE_SHEEP_HAPPY RB 1 ;; oveja recién encerrada / celebración
 DEF TILE_DIGIT_0  RB 10  ;; dígitos 0..9 seguidos: tile = TILE_DIGIT_0 + valor
 DEF TILE_FONT_A   RB 26  ;; letras A..Z seguidas (ver charmap.inc)
 DEF NUM_TILES     RB 0
