@@ -130,82 +130,9 @@ level_3_spawns::
    db END_OF_LIST
 
 ;;-----------------------------------------------------------------------------
-;; Nivel 4: corral abajo y a la derecha; dos bloques de vallas canalizan
-;; el rebaño hacia la entrada central.
-level_4::
-   db "                    "
-   db "####################"
-   db "#..................#"
-   db "#..###.............#"
-   db "#..#...............#"
-   db "#..#......##.......#"
-   db "#.........##.......#"
-   db "#....###...........#"
-   db "#....#.............#"
-   db "#.........###......#"
-   db "#..................#"
-   db "#........::..##....#"
-   db "#........::::::....#"
-   db "#........::::::....#"
-   db "#........::::::....#"
-   db "#........::::::....#"
-   db "#..................#"
-   db "####################"
-level_4_end:
-ASSERT level_4_end - level_4 == LEVEL_SIZE, "level_4 no mide 20x18"
-
-level_4_spawns::
-   db  8,  3                ;; pastor
-   db  3, 14                ;; ovejas
-   db  5, 15
-   db  6,  5
-   db  7, 14
-   db  8, 12
-   db  9, 15
-   db 10,  6
-   db END_OF_LIST
-
-;;-----------------------------------------------------------------------------
-;; Nivel 5: corral en la esquina superior izquierda y un laberinto abierto
-;; que obliga a rodear las vallas para llevar allí ocho ovejas.
-level_5::
-   db "                    "
-   db "####################"
-   db "#..::::::..........#"
-   db "#..::::::..........#"
-   db "#..::::::..........#"
-   db "#....::............#"
-   db "#..................#"
-   db "#......####........#"
-   db "#......#...........#"
-   db "#......#....###....#"
-   db "#......#...........#"
-   db "#..###........##...#"
-   db "#..#...............#"
-   db "#..#..####.........#"
-   db "#.....#............#"
-   db "#..................#"
-   db "#..................#"
-   db "####################"
-level_5_end:
-ASSERT level_5_end - level_5 == LEVEL_SIZE, "level_5 no mide 20x18"
-
-level_5_spawns::
-   db 14, 15                ;; pastor
-   db  7,  3                ;; ovejas
-   db  8,  4
-   db  9, 16
-   db 10, 12
-   db 12,  4
-   db 13, 12
-   db 15,  4
-   db 15, 15
-   db END_OF_LIST
-
-;;-----------------------------------------------------------------------------
 ;; Tabla de niveles: mapa, spawns y tiempo en segundos (un dígito por byte).
-;; Los tres primeros tiempos se ajustaron con tests/bot.py; los nuevos niveles
-;; tienen límites amplios para que el jugador pueda conducir el rebaño.
+;; Tiempos elegidos con el bot de tests/bot.py: tarda unos 35, 40 y 90 s en el
+;; peor caso; una persona necesita bastante más margen.
 level_table::
    dw level_1, level_1_spawns
    db 1, 2, 0               ;; 120 s
@@ -213,10 +140,6 @@ level_table::
    db 1, 5, 0               ;; 150 s
    dw level_3, level_3_spawns
    db 2, 1, 0               ;; 210 s
-   dw level_4, level_4_spawns
-   db 2, 4, 0               ;; 240 s
-   dw level_5, level_5_spawns
-   db 3, 0, 0               ;; 300 s
 level_table_end:
 ASSERT level_table_end - level_table == NUM_LEVELS * LEVEL_ENTRY_SIZE, "level_table no cuadra con NUM_LEVELS"
 

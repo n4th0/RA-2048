@@ -74,6 +74,7 @@ scene_message_enter::
 ;;-----------------------------------------------------------------------------
 ;; scene_message_update: espera a START y sigue.
 scene_message_update::
+   call music_update
    call sys_render_flush
    call joypad_read
    ld hl, show_timer
@@ -86,6 +87,7 @@ scene_message_update::
    ld a, [joypad_pressed]
    bit BTN_START, a
    ret z
+   call music_stop
    ld a, [after_message]
    cp AFTER_MESSAGE_NEXT_LEVEL
    jp z, scene_game_enter_level
