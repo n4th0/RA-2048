@@ -10,7 +10,7 @@ INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
 
-DEF START_ADDRESS EQU _SCRN0 + 11 * MAP_STRIDE + 4   ;; "PULSA START" (11): columna 4
+DEF START_ADDRESS EQU _SCRN0 + 13 * MAP_STRIDE + 4   ;; "PULSA START" (11): columna 4
 DEF START_LENGTH  EQU 11
 DEF BLINK_FRAMES  EQU 32
 
@@ -36,18 +36,24 @@ scene_title_enter::
    ld de, title_flock
    call print_text
 
-   ld hl, _SCRN0 + 8 * MAP_STRIDE + 2     ;; "LLEVA LAS OVEJAS" (16): columna 2
+   ld hl, _SCRN0 + 8 * MAP_STRIDE + 1     ;; "MUEVE CON FLECHAS" (17): columna 1
+   ld de, text_controls
+   call print_text
+   ld hl, _SCRN0 + 9 * MAP_STRIDE + 2     ;; "LLEVA LAS OVEJAS" (16): columna 2
    ld de, text_line_1
    call print_text
-   ld hl, _SCRN0 + 9 * MAP_STRIDE + 5     ;; "AL CORRAL" (9): columna 5
+   ld hl, _SCRN0 + 10 * MAP_STRIDE + 5    ;; "AL CORRAL" (9): columna 5
    ld de, text_line_2
+   call print_text
+   ld hl, _SCRN0 + 11 * MAP_STRIDE + 2    ;; "PAUSA CON START" (15): columna 2
+   ld de, text_pause_help
    call print_text
 
    ld hl, START_ADDRESS
    ld de, text_press_start
    call print_text
 
-   ld hl, _SCRN0 + 14 * MAP_STRIDE + 3    ;; "RECORD " y 6 dígitos (13): columna 3
+   ld hl, _SCRN0 + 15 * MAP_STRIDE + 3    ;; "RECORD " y 6 dígitos (13): columna 3
    ld de, text_record
    call print_text          ;; HL queda justo detrás de "RECORD "
    ld de, record
@@ -92,10 +98,14 @@ text_title:
    db "PASTOR", END_OF_LIST
 title_flock:                ;; tiles sueltos: pastor, hueco, ovejas
    db TILE_SHEPHERD, TILE_GRASS, TILE_SHEEP, TILE_SHEEP, TILE_GRASS, TILE_SHEEP, TILE_GRASS, TILE_SHEEP, END_OF_LIST
+text_controls:
+   db "MUEVE CON FLECHAS", END_OF_LIST
 text_line_1:
    db "LLEVA LAS OVEJAS", END_OF_LIST
 text_line_2:
    db "AL CORRAL", END_OF_LIST
+text_pause_help:
+   db "PAUSA CON START", END_OF_LIST
 text_press_start:
    db "PULSA START", END_OF_LIST
 text_record::

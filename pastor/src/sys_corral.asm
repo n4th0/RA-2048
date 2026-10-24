@@ -82,6 +82,7 @@ sys_corral_one:
    add e
    ld l, a
    ld [hl], TILE_SHEEP_HAPPY
+   call sfx_sheep_in
    ld hl, sheep_left
    dec [hl]
    ld hl, score + 4         ;; +10 puntos: sumar 1 al dígito de las decenas

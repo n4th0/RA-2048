@@ -291,6 +291,7 @@ sys_timer_update:
 ;; por 10 es correr sus dígitos una posición a la izquierda:
 ;;   unidades de segundo -> decenas de puntos, decenas -> centenas, ...
 level_won:
+   call sfx_level_clear
    ld a, [time_left + 2]    ;; unidades de segundo -> decenas de puntos
    ld hl, score + 4
    call score_add_digit

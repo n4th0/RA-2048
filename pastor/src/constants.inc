@@ -96,7 +96,7 @@ DEF TIME_DIGITS  EQU 3   ;; segundos: 000 .. 999
 ;;-----------------------------------------------------------------------------
 ;; Niveles: cada entrada de level_table es mapa (dw), spawns (dw) y tiempo
 ;; (TIME_DIGITS bytes, p. ej. db 1, 2, 0 = 120 s)
-DEF NUM_LEVELS         EQU 3
+DEF NUM_LEVELS         EQU 5
 DEF LEVEL_ENTRY_SIZE   EQU 2 + 2 + TIME_DIGITS
 DEF FRAMES_PER_SECOND  EQU 60
 DEF WIN_DELAY_FRAMES   EQU 60   ;; tras encerrar la última oveja, 1 s antes del mensaje

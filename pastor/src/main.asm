@@ -20,6 +20,7 @@ main::
 
    ld a, %11100100          ;; paleta: 0 blanco, 1 gris claro, 2 gris oscuro, 3 negro
    ld [rBGP], a
+   call sfx_init
    xor a                    ;; scroll a 0: no confiamos en lo que deje la boot ROM
    ld [rSCY], a
    ld [rSCX], a
