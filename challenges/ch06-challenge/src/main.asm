@@ -9,7 +9,7 @@
 ;;
 ;;   ❌ Solo se tocan estas líneas (DEF)
 ;;==============================================================
-DEF TEST EQUS "test_ej02"  ;; ← "test_ejNN" casos de prueba
+DEF TEST EQUS "test_ej01"  ;; ← "test_ejNN" casos de prueba
                            ;; ← "game" juego completo
 
 

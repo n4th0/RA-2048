@@ -43,6 +43,20 @@ SECTION "Ejercicio 04", ROM0
 ej04::   ;; = `map_tile_address`, que está en src/man/man_map.asm
    ;; ◉◉YOUR CODE◉◉
 
+ld a, d
+ld l, a
+ld h, 0
+add hl, hl
+add hl, hl
+add hl, hl
+add hl, hl
+add hl, hl
+ld a, e
+add l
+ld l, a
+
+
+
    ld   a, [map_current]        ;; \ HL += map_current: the address in the map
    add  l                       ;; |
    ld   l, a                    ;; |
