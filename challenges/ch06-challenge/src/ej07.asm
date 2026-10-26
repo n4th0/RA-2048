@@ -38,14 +38,44 @@ SECTION "Ejercicio 07", ROM0
 ;; ❌ Modifies A, BC, DE, HL
 ej07::   ;; = `portal_spawn`, que está en src/scn/scn_game_rules.asm
    ;; ◉◉YOUR CODE◉◉
-   ret ;; ◀━REMOVE RET IF NEEDED
+   ld   hl, PortalTemplate
+    call man_entity_create
+    ret  nz
+
+    push hl                     
+
+    call level_get              
+    
+    ;; FIX E1: Eliminada lectura "ld a, [hl]"
+    ;; FIX N1: "add LVL_EXIT_X" sobre registro A
+    ld   bc, LVL_EXIT_X         ;; FIX F1: Cargar offset en BC
+    add  hl, bc                 ;; FIX F2: Sumar offset de 16 bits a HL
+
+    ld   a, [hl+]               
+    ld   b, a                   
+    ld   a, [hl]                
+    ld   c, a                   
+
+    pop  hl                     
+    
+    ;; FIX E2: Eliminadas instrucciones "ld a, [hl]" y "add LVL_EXIT_X" sobre A
+    ld   a, l
+    add  a, E_Y                 ;; FIX F3: Calcular offset E_Y en HL
+    ld   l, a                   
+
+    ld   a, c                   ;; FIX E3: Cambiada escritura de B por C
+    ld   [hl+], a               
+    ld   a, b                   ;; FIX E4: Cambiada escritura de C por B
+    ld   [hl], a
+    ret
+
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej07 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Nivel 3 (level_current = 2): su portal está en X = 216, Y = 144. No hay entidades.
@@ -54,7 +84,7 @@ ej07::   ;; = `portal_spawn`, que está en src/scn/scn_game_rules.asm
 ;;   C000  A5 90 D8 88 00 00 00 08|00 88 00 00 00 00 00 00|
 ;;  El portal se crea en la entidad 0 con los valores de PortalTemplate, Y = 144 (90) y X = 216 (D8).
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Nivel 3. Las 12 entidades están vivas (solo CMP = 80).

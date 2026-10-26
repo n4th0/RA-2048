@@ -40,14 +40,25 @@ SECTION "Ejercicio 08", ROM0
 ;; ❌ Modifies A, BC, HL
 ej08::   ;; = `sys_ai_choose`, que está en src/sys/sys_ai.asm
    ;; ◉◉YOUR CODE◉◉
-   ret ;; ◀━REMOVE RET IF NEEDED
+   ld   c, a                   ;; FIX F1: Guardar número aleatorio original en C
+    
+   ;; FIX E1: Reemplazadas instrucciones 'swap a', 'rlca' y 'bit AI_STILL_MASK' por 'and AI_STILL_MASK'
+   and  AI_STILL_MASK
+   jp   z, sys_physics_stop
+
+   ld   a, c                   ;; FIX F2: Recuperar número aleatorio original
+   swap a                      ;; FIX S1: Corregida extracción de bits 5-4 mediante swap y máscara
+   and  3
+    
+   ld   b, a                   ;; FIX E2: Eliminada llamada redundante a rng_num para usar A directamente
+   jp   sys_physics_walk       ;; FIX S2: Corregida sintaxis eliminando la coma tras jp
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej08 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> A = %00110101 (bits 7-6 = 00). Entidad 0 con VY = 1, VX = 0 y mirando hacia abajo. DE = entidad 0.
@@ -58,7 +69,7 @@ ej08::   ;; = `sys_ai_choose`, que está en src/sys/sys_ai.asm
 ;;   C000  C3 00 00 00 00 00 00 00|00 00 00 00 00 00 00 00|
 ;;  Los bits 7-6 valen 00: la entidad se queda quieta. VY pasa de 1 a 0; VX y DIR no cambian.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> A = %01100000 (bits 7-6 = 01, bits 5-4 = 10). Entidad 0 quieta, mirando hacia abajo. DE = entidad 0.

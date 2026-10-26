@@ -58,14 +58,30 @@ ej06::   ;; = `game_enemies_spawn`, que está en src/scn/scn_game_rules.asm
    ret  z                       ;; /
 
    ;; ◉◉YOUR CODE◉◉
-   ret ;; ◀━REMOVE RET IF NEEDED
+   ld b, a
 
+   .loop:
+      push bc
+      ld a, [de]
+      inc de
+      ld b, a
+
+      ld a, [de]
+      inc de
+      ld c, a
+
+      ld hl, EnemyTemplate
+      call game_spawn_at
+      pop bc
+      dec b
+      jr nz, .loop
+      ret
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SI  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej06 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Los datos (en tst_data) son 3, (3, 2), (4, 20), (30, 9): tres enemigos como pares fila, columna. No hay entidades. HL = tst_data.
@@ -79,7 +95,7 @@ ej06::   ;; = `game_enemies_spawn`, que está en src/scn/scn_game_rules.asm
 ;;   C020  E7 F0 48 68 00 00 00 04|00 68 00 00 01 00 00 00|
 ;;  enemies_left = 3. Tres enemigos, en el orden de los datos, con Y = fila × 8 y X = columna × 8. Primero (fila 3, columna 2): Y = 24 (18), X = 16 (10). Segundo (4, 20): Y = 32 (20), X = 160 (A0). Tercero (30, 9): Y = 240 (F0), X = 72 (48). El resto de cada entidad viene de EnemyTemplate.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Los datos son un solo byte: 0. enemies_left vale 99. HL = tst_data.
