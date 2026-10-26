@@ -46,18 +46,21 @@ SECTION "Ejercicio 01", ROM0
 DMARoutine:
    ld   a, HIGH(shadow_oam)     ;; \ rDMA = the page of the shadow OAM:
    ldh  [rDMA], a               ;; / the copy starts now
-   ld   a, DMA_WAIT_LOOP        ;; \ Wait for the copy to end,
+   ld   a, DMA_WAIT_LOOPS        ;; \ Wait for the copy to end, ; S: DMA_WAIT_LOOP -> DMA_WAIT_LOOPS
 .wait                           ;; | doing nothing (only HRAM can be read):
    dec  a                       ;; | 32 loops x 5 cycles:
-   jr   z, .wait                ;; /
+   nop
+   jr   nz, .wait                ;; / ; E: jr nz, .wait 
+   ret
+ ; F: ret
 DMARoutineEnd:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Copies the DMA routine to HRAM. It is done once, when the console starts.
 ;; ❌ Modifies A, B, DE, HL
 ej01::   ;; = `dma_init`, que está en src/engine/dma.asm
-   ld   hl, hDMARoutine         ;; \ HL = the routine in the ROM
-   ld   de, DMARoutine          ;; | DE = its place in HRAM
+   ld   hl, DMARoutine         ;; \ HL = the routine in the ROM; E  hDMARoutine -> DMARoutine
+   ld   de, hDMARoutine          ;; | DE = its place in HRAM ; E DMARoutine -> hDMARoutine
    ld   b, DMARoutineEnd - DMARoutine ;; | B = its size
    jp   memcpy8                 ;; / Copy it
 
@@ -91,10 +94,11 @@ ej01::   ;; = `dma_init`, que está en src/engine/dma.asm
 ;; === FIXES
 ;;  Tipo: Cant.
 ;;  *  N:    __     (no existe)
-;;  *  E:    __     (errónea)
-;;  *  S:    __     (sintaxis)
-;;  *  F:    __     (falta algo)
+;;  *  E:    00     (errónea)
+;;  *  S:    00     (sintaxis)
+;;  *  F:    01     (falta algo)
 ;;
 ;; EXPLICACIONES ADICIONALES DE FIXES (si es necesario)
+;; faltaba un nop
 ;;  *
 ;;

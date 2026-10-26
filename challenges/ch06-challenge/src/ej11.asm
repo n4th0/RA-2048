@@ -43,7 +43,29 @@ SECTION "Ejercicio 11", ROM0
 ;; ❌ Modifies A, BC, HL
 ej11::   ;; = `sys_animation_one`, que está en src/sys/sys_animation.asm
    ;; ◉◉YOUR CODE◉◉
-   ret ;; ◀━REMOVE RET IF NEEDED
+   ld h, d
+   ld a, e
+   add E_CMP
+   ld l, a
+   ld a, [hl]
+   and CMP_PHYSICS
+   jr z, .tick
+   ld h, d
+   ld a, e
+   add E_VY
+   ld l, a
+   ld a, [hl+]
+   or [hl]
+   jr nz, .tick
+   jp sys_animation_image
+.tick
+   ld h, d
+   ld a, e
+   add E_TICK
+   ld l, a
+   inc [hl]
+   jp sys_animation_image
+   ; ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
 ;;  ENSAMBLA: ____  (SÍ / NO)

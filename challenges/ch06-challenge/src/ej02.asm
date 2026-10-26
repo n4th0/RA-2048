@@ -40,6 +40,22 @@ SECTION "Ejercicio 02", ROM0
 ;; ❌ Modifies A, B
 ej02::   ;; = `camera_axis`, que está en src/sys/sys_camera.asm
    ;; ◉◉YOUR CODE◉◉
+   sub b
+   jr c, .neg
+   ld b, a
+   ld a, 256
+   sub c
+   cp b
+   jr nc, .ret_pos
+   ret 
+   .neg: 
+   xor a
+   ret 
+   .ret_pos:
+   ld a, b
+   ret
+
+
    ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================

@@ -84,22 +84,28 @@ ej10::   ;; = `sys_prerender_one`, que está en src/sys/sys_prerender.asm
 
    ld   a, b                    ;; \ Sprite 1: the right half
    ld   [hl+], a                ;; | Y
-   ;; ◉◉YOUR CODE◉◉
+   ld a, c
+   bit ATTR_XFLIP_BIT, e
+   jr nz, .right ;; FIX S1: Faltó poner la coma en la instrucción
+   add SPRITE_WIDTH
+   .right
+   ld [hl+], a ;; FIX F1: Faltó cargar el primer valor de a
    ld   a, d                    ;; | TILE + TILES_PER_SPRITE (the right half)
    add  TILES_PER_SPRITE        ;; |
    ld   [hl+], a                ;; |
    ld   a, e                    ;; | ATTR
    ld   [hl+], a                ;; /
-
-   ;; ◉◉YOUR CODE◉◉
+   ld a, l
+   sub a, 16 ;; FIX E1: Se sumó un offset erróneo de 8, en vez del correcto de 16
+   ld [shadow_cursor], a
    ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej10 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Cámara X = 50, Y = 20. Entidad 0 en (Y = 60, X = 100), TILE = 80, ATTR = 0. shadow_cursor = 40. La Shadow OAM (96 bytes), llena de EE. DE = entidad 0.
@@ -111,7 +117,7 @@ ej10::   ;; = `sys_prerender_one`, que está en src/sys/sys_prerender.asm
 ;;   C0D0  .. .. .. 20 .. .. .. ..|.. .. .. .. .. .. .. ..|
 ;;  Los sprites van a partir de shadow_oam + 40. Sprite 0 (la mitad izquierda): 38 3A 50 00. Sprite 1 (la derecha): 38 42 52 00. shadow_cursor retrocede 8: de 40 a 32 (20 en hexadecimal), donde irá la siguiente entidad.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Igual, pero ATTR = $20 (flip horizontal) y shadow_cursor = 16.
@@ -125,3 +131,17 @@ ej10::   ;; = `sys_prerender_one`, que está en src/sys/sys_prerender.asm
 ;;  Con el flip, las mitades intercambian la X. Sprite 0: 38 42 50 20. Sprite 1: 38 3A 52 20. Se escriben a partir de shadow_oam + 16. shadow_cursor pasa de 16 a 8.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;; ==========================================================
+;; ==========================================================
+;; === FIXES
+;;  Tipo: Cant.
+;;  *  N:    __     (no existe)
+;;  *  E:    1     (errónea)
+;;  *  S:    1     (sintaxis)
+;;  *  F:    1     (falta algo)
+;;
+;; EXPLICACIONES ADICIONALES DE FIXES (si es necesario)
+;;  *
+;; 
+
+
+

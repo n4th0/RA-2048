@@ -58,6 +58,26 @@ ej05b::   ;; = `hud_draw_hearts`, que está en src/engine/ui/hud.asm
    ld   b, HEARTS_MAX           ;; B = hearts to draw
    ld   hl, HUD_HEARTS_CELL     ;; HL = the first cell of the hearts
 
+
+    ld a, l
+    add b
+    dec a ; FIX F1 FALTA
+    ld l, a
+.hearts:
+    ld a, c
+    cp 0 
+    jr z, .empty
+    ld a, TILE_HEART_FULL
+    dec c 
+    jr .draw
+.empty:
+    ld a, TILE_HEART_EMPTY
+.draw:
+    ld [hl], a
+    dec hl
+    dec b
+    jr nz, .hearts
+
    ;; ◉◉YOUR CODE◉◉
    ret ;; ◀━REMOVE RET IF NEEDED
 

@@ -36,6 +36,12 @@ SECTION "Ejercicio 03", ROM0
 ;; (or with the screen off).
 ;; ❌ Modifies A, BC
 ej03::   ;; = `sys_render_scroll`, que está en src/sys/sys_render.asm
+call sys_camera_get
+ld a, b
+ldh [rSCX], a
+ld a, c
+ldh [rSCY], a
+ret
    ;; ◉◉YOUR CODE◉◉
    ret ;; ◀━REMOVE RET IF NEEDED
 

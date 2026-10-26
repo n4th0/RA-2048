@@ -45,15 +45,26 @@ SECTION "Ejercicio 09", ROM0
 ;; ❌ Modifies A, BC. Does NOT modify DE or HL
 ;; ⚠️ Use sys_camera_get: it gives B = camera X and C = camera Y
 ej09::   ;; = `world_to_oam`, que está en src/sys/sys_prerender.asm
-   ;; ◉◉YOUR CODE◉◉
+   call sys_camera_get
+   ld a, d
+   sub c
+   add OAM_Y_OFFSET
+   push af ;; FIX N1: Usado push solo con a por error en vez de con af 
+
+   ld a, e
+   sub b 
+   add OAM_X_OFFSET ;; FIX S1: Puesto OAM_Y_OFFSET por error
+   ld c, a
+   pop af ;; N1 otra vez con el pop
+   ld b, a
    ret ;; ◀━REMOVE RET IF NEEDED
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej09 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Cámara X = 50, Y = 20. D = 60 (Y), E = 100 (X). HL = 1234.
@@ -63,7 +74,7 @@ ej09::   ;; = `world_to_oam`, que está en src/sys/sys_prerender.asm
 ;;    hl = 1234
 ;;  B = 60 − 20 + 16 = 56 (38 en hexadecimal) y C = 100 − 50 + 8 = 58 (3A). DE y HL no cambian.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Cámara X = 50, Y = 20. D = 2 (Y), E = 3 (X). HL = 1234.
@@ -74,3 +85,14 @@ ej09::   ;; = `world_to_oam`, que está en src/sys/sys_prerender.asm
 ;;  B = 2 − 20 + 16 = −2, que en 8 bits es 254 (FE), y C = 3 − 50 + 8 = −39, que es 217 (D9). DE y HL no cambian.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;; ==========================================================
+;; ==========================================================
+;; === FIXES
+;;  Tipo: Cant.
+;;  *  N:    1     (no existe)
+;;  *  E:    __     (errónea)
+;;  *  S:    1     (sintaxis)
+;;  *  F:    __     (falta algo)
+;;
+;; EXPLICACIONES ADICIONALES DE FIXES (si es necesario)
+;;  *
+;; 
