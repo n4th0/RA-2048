@@ -50,9 +50,10 @@ ej12::   ;; = `sys_animation_image`, que está en src/sys/sys_animation.asm
    ld   h, d                    ;; \ A = TICK
    ld   a, e                    ;; | (HL = &entity.TICK)
    add  E_TICK                  ;; |
+   ld l, a
    ld   a, [hl]                 ;; /
    and  ANIM_STEP_MASK          ;; \ Bit 2 of TICK: 0 for 4 frames, 4 for 4 frames...
-   rrca
+   ;; FIX E1: Faltó eliminar la instrucción rrca que era errónea
    ld   b, a                    ;; / B = tile offset of its step: 0 or 4 (no shift)
 
    ld   h, d                    ;; \ A = entity.DIR
@@ -60,10 +61,11 @@ ej12::   ;; = `sys_animation_image`, que está en src/sys/sys_animation.asm
    add  E_DIR                   ;; |
    ld   l, a                    ;; |
    ld   a, [hl]                 ;; /
+   add a
    ld   c, a                    ;; \ BC = DIR * 2: the offset in the table
    ld   a, b                    ;; | A = the offset of the step
    ld   b, 0                    ;; /
-   ld   hl, DirImages           ;; \ HL = &DirImage[DIR]
+   ld   hl, DirImage           ;; \ HL = &DirImage[DIR]
    add  hl, bc                  ;; /
 
    add  [hl]                    ;; \ A = step offset + tile of the row of its direction
@@ -87,18 +89,18 @@ ej12::   ;; = `sys_animation_image`, que está en src/sys/sys_animation.asm
    inc  l                       ;; / (HL -> ATTR: the next field)
 
    ld   a, [hl]                 ;; \ entity.ATTR = its ATTR with the flip of
-   res  ATTR_YFLIP_BIT, a       ;; | its direction (the other bits stay)
+   res  ATTR_XFLIP_BIT, a       ;; | its direction (the other bits stay)
    or   b                       ;; |
    ld   [hl], a                 ;; /
 
    ret
 
 ;; ==========================================================
-;;  ENSAMBLA: ____  (SÍ / NO)
+;;  ENSAMBLA: SÍ  (SÍ / NO)
 ;; === CASOS DE PRUEBA   (test_ej12 en main.asm)
 ;;  * Comprobar que CPU y MEM coinciden con el valor esperado
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 1: ____  (OK / Falla)
+;; * CASO 1: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Entidad 0: DIR_LEFT, TICK = 7, SHEET = 80, ATTR = 0. DE = entidad 0. (TICK no cambia aquí.)
@@ -109,7 +111,7 @@ ej12::   ;; = `sys_animation_image`, que está en src/sys/sys_animation.asm
 ;;   C000  A3 00 00 64 20 00 FF 00|02 50 07 00 00 00 00 00|
 ;;  El bit 2 de 7 vale 1: el paso es 4. DIR_LEFT: fila 16 y flip horizontal. TILE = 80 + 16 + 4 = 100 (64 en hexadecimal) y ATTR = 20.
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;; * CASO 2: ____  (OK / Falla)
+;; * CASO 2: OK  (OK / Falla)
 ;;
 ;;        >>>>> RESULTADO ESPERADO (Comprobar) <<<<<
 ;; [PREVIO]> Entidad 0: DIR_UP, TICK = 13, SHEET = 80, ATTR = $30 (paleta 1 y flip horizontal). DE = entidad 0.
@@ -124,10 +126,10 @@ ej12::   ;; = `sys_animation_image`, que está en src/sys/sys_animation.asm
 ;; === FIXES
 ;;  Tipo: Cant.
 ;;  *  N:    __     (no existe)
-;;  *  E:    __     (errónea)
+;;  *  E:    1     (errónea)
 ;;  *  S:    __     (sintaxis)
 ;;  *  F:    __     (falta algo)
 ;;
 ;; EXPLICACIONES ADICIONALES DE FIXES (si es necesario)
 ;;  *
-;;
+

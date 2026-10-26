@@ -5,11 +5,11 @@
 ;;   TEST = "test_ejNN"   las pruebas P1 y P2 del ejercicio NN (como en el Challenge 3):
 ;;                        BGB se para en cada `ld b, b`; compara CPU y MEM con el RESULTADO ESPERADO de ejNN.asm.
 ;;
-;;   El juego completo solo funciona cuando están hechos TODOS los ejercicios (y los de corregir, renombrados a ejNN.asm).
+;;   El juego completo solo funciona cuando están hechos TODOS los ejercici00 (y los de corregir, renombrados a ejNN.asm).
 ;;
 ;;   ❌ Solo se tocan estas líneas (DEF)
 ;;==============================================================
-DEF TEST EQUS "test_ej02"  ;; ← "test_ejNN" casos de prueba
+DEF TEST EQUS "test_ej00"  ;; ← "test_ejNN" casos de prueba
                            ;; ← "game" juego completo
 
 
