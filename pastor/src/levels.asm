@@ -6,8 +6,9 @@
 ;; cada carácter a su índice de tile, así el nivel se edita como un dibujo:
 ;;    " " blanco (fila 0, reservada para el marcador)
 ;;    "." hierba     "#" valla     ":" suelo del corral
-;; Pastor y ovejas NO van en el mapa: son entidades. Cada nivel tiene además
-;; una lista de "spawns" con su posición inicial (ver level_1_spawns).
+;; Pastor, ovejas y lobo NO van en el mapa: son entidades. Cada nivel tiene
+;; además una lista de "spawns" con sus posiciones iniciales. En niveles con
+;; lobo, END_OF_SHEEP precede a la posición del lobo.
 ;;=============================================================================
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
@@ -130,9 +131,81 @@ level_3_spawns::
    db END_OF_LIST
 
 ;;-----------------------------------------------------------------------------
+;; Nivel 4: el lobo ronda por el prado; las ovejas también huyen de él.
+level_4::
+   db "                    "   ;;  0 marcador
+   db "####################"   ;;  1
+   db "#..................#"   ;;  2
+   db "#..###.............#"   ;;  3
+   db "#..................#"   ;;  4
+   db "#.........#........#"   ;;  5
+   db "#.........#........#"   ;;  6
+   db "#..................#"   ;;  7
+   db "#......##..........#"   ;;  8
+   db "#..................#"   ;;  9
+   db "#............##::###"   ;; 10 entrada del corral
+   db "#............#:::::#"   ;; 11
+   db "#............#:::::#"   ;; 12
+   db "#............#:::::#"   ;; 13
+   db "#............#:::::#"   ;; 14
+   db "#............#:::::#"   ;; 15
+   db "#............#:::::#"   ;; 16
+   db "####################"   ;; 17
+level_4_end:
+ASSERT level_4_end - level_4 == LEVEL_SIZE, "level_4 no mide 20x18"
+
+level_4_spawns::
+   db  8,  4                ;; pastor
+   db  3, 10                ;; ovejas
+   db  6, 15
+   db  8, 12
+   db 13,  5
+   db 15,  9
+   db END_OF_SHEEP
+   db  5,  5                ;; lobo
+   db END_OF_LIST
+
+;;-----------------------------------------------------------------------------
+;; Nivel 5: un prado más amplio con dos grupos de ovejas y el lobo.
+level_5::
+   db "                    "   ;;  0 marcador
+   db "####################"   ;;  1
+   db "#..................#"   ;;  2
+   db "#..#...........#...#"   ;;  3
+   db "#..#...........#...#"   ;;  4
+   db "#.................##"   ;;  5
+   db "#....##............#"   ;;  6
+   db "#..................#"   ;;  7
+   db "#..........##......#"   ;;  8
+   db "#..................#"   ;;  9
+   db "###:###............#"   ;; 10 entrada del corral
+   db "#:::::#............#"   ;; 11
+   db "#:::::#....##......#"   ;; 12
+   db "#:::::#............#"   ;; 13
+   db "#:::::#............#"   ;; 14
+   db "#:::::#............#"   ;; 15
+   db "#:::::#............#"   ;; 16
+   db "####################"   ;; 17
+level_5_end:
+ASSERT level_5_end - level_5 == LEVEL_SIZE, "level_5 no mide 20x18"
+
+level_5_spawns::
+   db  8, 10                ;; pastor
+   db  3,  6                ;; ovejas
+   db  4, 10
+   db  7, 15
+   db  9,  5
+   db 12, 10
+   db 14, 15
+   db 15,  9
+   db END_OF_SHEEP
+   db  7,  9                ;; lobo
+   db END_OF_LIST
+
+;;-----------------------------------------------------------------------------
 ;; Tabla de niveles: mapa, spawns y tiempo en segundos (un dígito por byte).
-;; Tiempos elegidos con el bot de tests/bot.py: tarda unos 35, 40 y 90 s en el
-;; peor caso; una persona necesita bastante más margen.
+;; Tiempos de los tres primeros niveles conservados; los niveles con lobo dan
+;; más margen para conducir las ovejas mientras el lobo las dispersa.
 level_table::
    dw level_1, level_1_spawns
    db 1, 2, 0               ;; 120 s
@@ -140,6 +213,10 @@ level_table::
    db 1, 5, 0               ;; 150 s
    dw level_3, level_3_spawns
    db 2, 1, 0               ;; 210 s
+   dw level_4, level_4_spawns
+   db 2, 4, 0               ;; 240 s
+   dw level_5, level_5_spawns
+   db 3, 0, 0               ;; 300 s
 level_table_end:
 ASSERT level_table_end - level_table == NUM_LEVELS * LEVEL_ENTRY_SIZE, "level_table no cuadra con NUM_LEVELS"
 

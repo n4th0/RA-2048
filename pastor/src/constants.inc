@@ -27,6 +27,7 @@ DEF TILE_SHEPHERD RB 1   ;; pastor
 DEF TILE_SHEPHERD_STEP RB 1 ;; pastor con las piernas en otra posición
 DEF TILE_SHEEP    RB 1   ;; oveja
 DEF TILE_SHEEP_HAPPY RB 1 ;; oveja recién encerrada / celebración
+DEF TILE_WOLF     RB 1   ;; lobo
 DEF TILE_DIGIT_0  RB 10  ;; dígitos 0..9 seguidos: tile = TILE_DIGIT_0 + valor
 DEF TILE_FONT_A   RB 26  ;; letras A..Z seguidas (ver charmap.inc)
 DEF NUM_TILES     RB 0
@@ -36,7 +37,7 @@ DEF NUM_TILES     RB 0
 ;; Campo = base de la entidad + desplazamiento.
 RSRESET
 DEF E_ACTIVE      RB 1   ;; 0 = libre, 1 = en uso. Tiene que ser el campo 0
-DEF E_TYPE        RB 1   ;; TYPE_SHEPHERD / TYPE_SHEEP / TYPE_SHEEP_PENNED
+DEF E_TYPE        RB 1   ;; tipo de entidad
 DEF E_Y           RB 1   ;; fila en el tilemap
 DEF E_X           RB 1   ;; columna en el tilemap
 DEF E_TILE        RB 1   ;; tile con el que se dibuja
@@ -52,10 +53,12 @@ DEF MAX_ENTITIES  EQU 16
 DEF TYPE_SHEPHERD     EQU 0
 DEF TYPE_SHEEP        EQU 1   ;; suelta por el prado
 DEF TYPE_SHEEP_PENNED EQU 2   ;; ya en el corral: solo se mueve sobre suelo de corral
+DEF TYPE_WOLF         EQU 3
 
 ;; Velocidad: un paso cada N frames (60 frames = 1 s)
 DEF SHEPHERD_STEP_FRAMES EQU 6
 DEF SHEEP_STEP_FRAMES    EQU 10  ;; más lentas que el pastor, si no no hay quien las alcance
+DEF WOLF_STEP_FRAMES     EQU 30  ;; el lobo se mueve despacio
 
 ;; Comportamiento de las ovejas
 DEF SHEEP_SCARE_DISTANCE EQU 3   ;; huyen si |dx| + |dy| <= esto
@@ -63,6 +66,7 @@ DEF SHEEP_GRAZE_CHANCE   EQU 16  ;; si no huyen: paso al azar si el número alea
 
 ;; Marca de fin de las listas (centinela, sesión 03.1): ninguna fila vale $FF
 DEF END_OF_LIST   EQU $FF
+DEF END_OF_SHEEP  EQU $FE  ;; opcionalmente seguido por una posición de lobo
 
 ;;-----------------------------------------------------------------------------
 ;; Mando: bits de joypad_dpad y joypad_buttons, como en la sesión 02.2
@@ -96,7 +100,7 @@ DEF TIME_DIGITS  EQU 3   ;; segundos: 000 .. 999
 ;;-----------------------------------------------------------------------------
 ;; Niveles: cada entrada de level_table es mapa (dw), spawns (dw) y tiempo
 ;; (TIME_DIGITS bytes, p. ej. db 1, 2, 0 = 120 s)
-DEF NUM_LEVELS         EQU 3
+DEF NUM_LEVELS         EQU 5
 DEF LEVEL_ENTRY_SIZE   EQU 2 + 2 + TIME_DIGITS
 DEF FRAMES_PER_SECOND  EQU 60
 DEF WIN_DELAY_FRAMES   EQU 60   ;; tras encerrar la última oveja, 1 s antes del mensaje

@@ -1,22 +1,25 @@
 ;;=============================================================================
-;; sys_ai.asm — Sistema de IA: las ovejas huyen del pastor
+;; sys_ai.asm — IA: ovejas huyen del pastor y del lobo
 ;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
 ;;
 ;; Cada SHEEP_STEP_FRAMES frames, cada oveja decide:
-;;  - Si el pastor está cerca (|dx| + |dy| <= SHEEP_SCARE_DISTANCE), da un paso
+;;  - Si el pastor o el lobo están cerca (|dx| + |dy| <= SHEEP_SCARE_DISTANCE), da un paso
 ;;    alejándose por el eje en el que está más lejos. Si ese paso está
 ;;    bloqueado, prueba el otro eje; si ninguno vale, se queda quieta.
 ;;  - Si no, a veces (SHEEP_GRAZE_CHANCE de cada 256) da un paso al azar.
 ;; Las ovejas encerradas hacen lo mismo, pero solo pueden pisar suelo de corral.
 ;;
 ;; dy y dx tienen signo: positivo = la oveja está debajo / a la derecha del
-;; pastor. Los negativos son "dar la vuelta" en 8 bits: -1 = $FF (sesión 03.1).
+;; objetivo. Los negativos son "dar la vuelta" en 8 bits: -1 = $FF (sesión 03.1).
 ;;=============================================================================
 INCLUDE "constants.inc"
 
 SECTION "AI state", WRAM0
 ai_player_y:    DS 1
 ai_player_x:    DS 1
+ai_wolf_y:      DS 1
+ai_wolf_x:      DS 1
+ai_wolf_active: DS 1
 ai_dy:          DS 1         ;; oveja.y - pastor.y
 ai_dx:          DS 1         ;; oveja.x - pastor.x
 ai_entity_type: DS 1         ;; tipo de la oveja que se está procesando
@@ -27,6 +30,8 @@ SECTION "AI system CODE", ROM0
 ;; sys_ai_update: localiza al pastor y aplica la IA a cada oveja.
 ;; Llamar después de sys_input_update (así reaccionan en el mismo frame).
 sys_ai_update::
+   xor a
+   ld [ai_wolf_active], a
    ld hl, ai_find_player
    call man_entity_for_each
    ld hl, sys_ai_one
@@ -42,7 +47,17 @@ ai_find_player:
    ld l, a
    ld a, [hl+]              ;; A = tipo, HL -> E_Y
    cp TYPE_SHEPHERD
+   jr z, .shepherd
+   cp TYPE_WOLF
    ret nz
+   ld a, [hl+]
+   ld [ai_wolf_y], a
+   ld a, [hl]
+   ld [ai_wolf_x], a
+   ld a, 1
+   ld [ai_wolf_active], a
+   ret
+.shepherd:
    ld a, [hl+]
    ld [ai_player_y], a
    ld a, [hl]
@@ -61,7 +76,10 @@ sys_ai_one:
    cp TYPE_SHEEP
    jr z, .is_sheep
    cp TYPE_SHEEP_PENNED
-   ret nz                   ;; ni oveja suelta ni encerrada: no es cosa nuestra
+   jr z, .is_sheep
+   cp TYPE_WOLF
+   jr z, .is_wolf
+   ret                      ;; esta entidad no necesita IA
 .is_sheep:
    ld [ai_entity_type], a
 
@@ -105,8 +123,33 @@ sys_ai_one:
    ld l, a                  ;; L = |dx|
    add h                    ;; A = distancia
    cp SHEEP_SCARE_DISTANCE + 1
-   jr nc, .graze            ;; distancia > SCARE: no se asusta
+   jr c, .flee               ;; pastor cerca
 
+   ;; Si el pastor no está cerca, comprobar si el lobo sí lo está.
+   ld a, [ai_wolf_active]
+   and a
+   jr z, .graze
+   ld a, [ai_wolf_y]
+   ld l, a
+   ld a, b
+   sub l
+   ld [ai_dy], a
+   ld a, [ai_wolf_x]
+   ld l, a
+   ld a, c
+   sub l
+   ld [ai_dx], a
+   ld a, [ai_dy]
+   call abs_a
+   ld h, a
+   ld a, [ai_dx]
+   call abs_a
+   ld l, a
+   add h
+   cp SHEEP_SCARE_DISTANCE + 1
+   jr nc, .graze
+
+.flee:
    ld a, h                  ;; huir: primero por el eje más lejano
    cp l
    jr c, .horizontal_first  ;; |dy| < |dx|
@@ -117,6 +160,39 @@ sys_ai_one:
    call ai_flee_horizontal
    ret nc
    jp ai_flee_vertical
+
+.is_wolf:
+   ld a, TYPE_WOLF
+   ld [ai_entity_type], a
+   ld a, E_COOLDOWN
+   add e
+   ld l, a
+   ld a, [hl]
+   and a
+   jr z, .wolf_ready
+   dec [hl]
+   ret
+.wolf_ready:
+   ld [hl], WOLF_STEP_FRAMES - 1
+   ld a, E_Y
+   add e
+   ld l, a
+   ld b, [hl]
+   inc l
+   ld c, [hl]
+   call rng_next
+   and %00000011
+   add a
+   ld hl, directions
+   add l
+   ld l, a
+   ld a, h
+   adc 0
+   ld h, a
+   ld a, [hl+]
+   ld l, [hl]
+   ld h, a
+   jp ai_try_offset
 
 .graze:
    call rng_next

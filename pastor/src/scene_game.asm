@@ -98,17 +98,27 @@ scene_game_init::
    call rng_init            ;; antes de los spawns: reparte sus cooldowns
    pop hl                   ;; HL = spawns
 
-   ;; El primer par es el pastor; los siguientes, ovejas
+   ;; Primero el pastor, después ovejas y, opcionalmente, un lobo
    ld a, TYPE_SHEPHERD
    ld c, TILE_SHEPHERD
    call spawn_entity
    ret c                    ;; lista vacía o array lleno: nada más que crear
 .sheep:
+   ld a, [hl]
+   cp END_OF_SHEEP
+   jr z, .wolf
    ld a, TYPE_SHEEP
    ld c, TILE_SHEEP
    call spawn_entity
    jr nc, .sheep
 
+   jr .entities_done
+.wolf:
+   inc hl
+   ld a, TYPE_WOLF
+   ld c, TILE_WOLF
+   call spawn_entity
+.entities_done:
    call sys_corral_init     ;; cuenta ovejas
    jp sys_render_init       ;; dibujarlo todo ya (pantalla apagada)
 
