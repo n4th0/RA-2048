@@ -1,6 +1,6 @@
 # Pastor
 
-Pastor es un juego desarrollado en ensamblador (CPU SM83 / Z80) para la consola Game Boy (DMG/Color) utilizando el framework GBTelera[cite: 1, 8, 9]. Este proyecto ha sido creado para la jam GBRetroDev 2026[cite: 9].
+Pastor es un juego desarrollado en ensamblador (CPU SM83 / Z80) para la consola Game Boy (DMG/Color) utilizando el framework GBTelera. Este proyecto ha sido creado para la jam GBRetroDev 2026.
 
 ---
 
@@ -37,3 +37,5 @@ Para compilar el proyecto en Fedora, abre una terminal en la subcarpeta del jueg
 
 ```bash
 make
+
+gbt_game.gb
