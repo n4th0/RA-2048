@@ -98,7 +98,7 @@ scene_game_init::
    call rng_init            ;; antes de los spawns: reparte sus cooldowns
    pop hl                   ;; HL = spawns
 
-   ;; Primero el pastor, después ovejas y, opcionalmente, un lobo
+   ;; Primero el pastor, después ovejas y, opcionalmente, lobos
    ld a, TYPE_SHEPHERD
    ld c, TILE_SHEPHERD
    call spawn_entity
@@ -115,9 +115,11 @@ scene_game_init::
    jr .entities_done
 .wolf:
    inc hl
+.wolves:
    ld a, TYPE_WOLF
    ld c, TILE_WOLF
    call spawn_entity
+   jr nc, .wolves
 .entities_done:
    call sys_corral_init     ;; cuenta ovejas
    jp sys_render_init       ;; dibujarlo todo ya (pantalla apagada)

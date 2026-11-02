@@ -17,9 +17,11 @@ INCLUDE "constants.inc"
 SECTION "AI state", WRAM0
 ai_player_y:    DS 1
 ai_player_x:    DS 1
-ai_wolf_y:      DS 1
-ai_wolf_x:      DS 1
-ai_wolf_active: DS 1
+ai_wolf_1_y:    DS 1
+ai_wolf_1_x:    DS 1
+ai_wolf_2_y:    DS 1
+ai_wolf_2_x:    DS 1
+ai_wolf_count:  DS 1
 ai_dy:          DS 1         ;; oveja.y - pastor.y
 ai_dx:          DS 1         ;; oveja.x - pastor.x
 ai_entity_type: DS 1         ;; tipo de la oveja que se está procesando
@@ -31,7 +33,7 @@ SECTION "AI system CODE", ROM0
 ;; Llamar después de sys_input_update (así reaccionan en el mismo frame).
 sys_ai_update::
    xor a
-   ld [ai_wolf_active], a
+   ld [ai_wolf_count], a
    ld hl, ai_find_player
    call man_entity_for_each
    ld hl, sys_ai_one
@@ -50,12 +52,27 @@ ai_find_player:
    jr z, .shepherd
    cp TYPE_WOLF
    ret nz
+   ld a, [ai_wolf_count]
+   cp 0
+   jr z, .first_wolf
+   cp 1
+   jr z, .second_wolf
+   ret
+.first_wolf:
    ld a, [hl+]
-   ld [ai_wolf_y], a
+   ld [ai_wolf_1_y], a
    ld a, [hl]
-   ld [ai_wolf_x], a
+   ld [ai_wolf_1_x], a
    ld a, 1
-   ld [ai_wolf_active], a
+   ld [ai_wolf_count], a
+   ret
+.second_wolf:
+   ld a, [hl+]
+   ld [ai_wolf_2_y], a
+   ld a, [hl]
+   ld [ai_wolf_2_x], a
+   ld a, 2
+   ld [ai_wolf_count], a
    ret
 .shepherd:
    ld a, [hl+]
@@ -78,7 +95,7 @@ sys_ai_one:
    cp TYPE_SHEEP_PENNED
    jr z, .is_sheep
    cp TYPE_WOLF
-   jr z, .is_wolf
+   jp z, .is_wolf
    ret                      ;; esta entidad no necesita IA
 .is_sheep:
    ld [ai_entity_type], a
@@ -125,16 +142,39 @@ sys_ai_one:
    cp SHEEP_SCARE_DISTANCE + 1
    jr c, .flee               ;; pastor cerca
 
-   ;; Si el pastor no está cerca, comprobar si el lobo sí lo está.
-   ld a, [ai_wolf_active]
+   ;; Si el pastor no está cerca, comprobar si alguno de los lobos lo está.
+   ld a, [ai_wolf_count]
    and a
-   jr z, .graze
-   ld a, [ai_wolf_y]
+   jp z, .graze
+   ld a, [ai_wolf_1_y]
    ld l, a
    ld a, b
    sub l
    ld [ai_dy], a
-   ld a, [ai_wolf_x]
+   ld a, [ai_wolf_1_x]
+   ld l, a
+   ld a, c
+   sub l
+   ld [ai_dx], a
+   ld a, [ai_dy]
+   call abs_a
+   ld h, a
+   ld a, [ai_dx]
+   call abs_a
+   ld l, a
+   add h
+   cp SHEEP_SCARE_DISTANCE + 1
+   jr c, .flee
+
+   ld a, [ai_wolf_count]
+   cp 2
+   jr nz, .graze
+   ld a, [ai_wolf_2_y]
+   ld l, a
+   ld a, b
+   sub l
+   ld [ai_dy], a
+   ld a, [ai_wolf_2_x]
    ld l, a
    ld a, c
    sub l

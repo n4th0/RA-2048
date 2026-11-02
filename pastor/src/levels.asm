@@ -166,7 +166,7 @@ level_4_spawns::
    db END_OF_LIST
 
 ;;-----------------------------------------------------------------------------
-;; Nivel 5: un prado más amplio con dos grupos de ovejas y el lobo.
+;; Nivel 5: un prado más amplio con dos grupos de ovejas y dos lobos.
 level_5::
    db "                    "   ;;  0 marcador
    db "####################"   ;;  1
@@ -199,7 +199,8 @@ level_5_spawns::
    db 14, 15
    db 15,  9
    db END_OF_SHEEP
-   db  7,  9                ;; lobo
+   db  7,  9                ;; lobos
+   db  3, 10
    db END_OF_LIST
 
 ;;-----------------------------------------------------------------------------

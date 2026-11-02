@@ -66,7 +66,7 @@ DEF SHEEP_GRAZE_CHANCE   EQU 16  ;; si no huyen: paso al azar si el número alea
 
 ;; Marca de fin de las listas (centinela, sesión 03.1): ninguna fila vale $FF
 DEF END_OF_LIST   EQU $FF
-DEF END_OF_SHEEP  EQU $FE  ;; opcionalmente seguido por una posición de lobo
+DEF END_OF_SHEEP  EQU $FE  ;; seguido por cero o más posiciones de lobo
 
 ;;-----------------------------------------------------------------------------
 ;; Mando: bits de joypad_dpad y joypad_buttons, como en la sesión 02.2
