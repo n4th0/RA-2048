@@ -1,8 +1,3 @@
-;;=============================================================================
-;; sound.asm — Efectos y melodía con el canal de pulso 1 del DMG
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;=============================================================================
-
 SECTION "Sound state", WRAM0
 melody_timer: DS 1
 melody_notes_left: DS 1
