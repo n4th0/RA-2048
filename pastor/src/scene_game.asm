@@ -1,7 +1,3 @@
-;;=============================================================================
-;; scene_game.asm — Escena de juego: niveles, sistemas, tiempo y pausa
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;=============================================================================
 INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
@@ -23,7 +19,6 @@ sheep_pose_tile: DS 1
 
 SECTION "Scene game CODE", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; scene_game_new_game: empieza una partida desde el nivel 1.
 scene_game_new_game::
    call score_reset
@@ -31,7 +26,6 @@ scene_game_new_game::
    ld [current_level], a
    jr scene_game_enter_level
 
-;;-----------------------------------------------------------------------------
 ;; scene_game_enter_level: carga current_level y pasa a la escena de juego.
 scene_game_enter_level::
    call lcd_off
@@ -86,10 +80,9 @@ scene_game_enter_level::
    ld [scene_id], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; scene_game_init: carga el nivel y crea sus entidades.
 ;; LLAMAR CON LA PANTALLA APAGADA: pinta el nivel entero en VRAM.
-;; 📥 HL = mapa del nivel, DE = su lista de spawns
+;; HL = mapa del nivel, DE = su lista de spawns
 scene_game_init::
    push de
    call sys_render_reset
@@ -124,11 +117,10 @@ scene_game_init::
    call sys_corral_init     ;; cuenta ovejas
    jp sys_render_init       ;; dibujarlo todo ya (pantalla apagada)
 
-;;-----------------------------------------------------------------------------
 ;; spawn_entity: crea una entidad con la siguiente posición de la lista.
-;; 📥 HL = puntero a la lista (fila, columna, ..., END_OF_LIST)
-;;    A = tipo, C = tile
-;; 📤 HL avanzado al siguiente par
+;; HL = puntero a la lista (fila, columna, ..., END_OF_LIST)
+;; A = tipo, C = tile
+;; HL avanzado al siguiente par
 ;;    carry a 1 si la lista se acabó o el array está lleno (no se creó nada)
 ;; Modifica: A, F, BC, DE, HL
 spawn_entity:
@@ -173,7 +165,6 @@ spawn_entity:
    scf
    ret
 
-;;-----------------------------------------------------------------------------
 ;; scene_game_update: un frame de juego. Lo llama el gestor de escenas
 ;; justo después de wait_vblank.
 scene_game_update::
@@ -252,9 +243,8 @@ scene_game_set_sheep_pose_one:
    ld [hl], a
    jp sys_render_queue_draw
 
-;;-----------------------------------------------------------------------------
 ;; sys_timer_update: descuenta un segundo cada FRAMES_PER_SECOND frames.
-;; 📤 carry a 1 si el tiempo se acabó (y ya se ha cambiado de escena)
+;; carry a 1 si el tiempo se acabó (y ya se ha cambiado de escena)
 sys_timer_update:
    ld hl, frame_count
    dec [hl]
@@ -297,7 +287,6 @@ sys_timer_update:
    ret
 
 
-;;-----------------------------------------------------------------------------
 ;; level_won: suma el bonus y pasa al mensaje de nivel superado o al final.
 ;; Bonus = 100 puntos + 10 por cada segundo que sobre. Multiplicar el tiempo
 ;; por 10 es correr sus dígitos una posición a la izquierda:
@@ -333,7 +322,6 @@ level_won:
    ld b, AFTER_MESSAGE_TITLE
    jp scene_message_enter
 
-;;-----------------------------------------------------------------------------
 ;; pause_on / pause_off: congela la partida y escribe/borra PAUSA.
 ;; Al quitarla, se repinta el fondo bajo el texto y todas las entidades
 ;; (alguna podía estar debajo).
@@ -363,7 +351,6 @@ pause_off:
    jr nz, .restore
    jp sys_render_redraw_all
 
-;;-----------------------------------------------------------------------------
 ;; Textos de esta escena y de los mensajes que lanza
 text_pause:
    db "PAUSA", END_OF_LIST
