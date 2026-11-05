@@ -4,9 +4,9 @@ INCLUDE "constants.inc"
 DEF SIGNATURE_SIZE EQU 4
 
 SECTION "Score state", WRAM0
-score::      DS SCORE_DIGITS ;; puntos de la partida
-record::     DS SCORE_DIGITS ;; mejor puntuación (copia en WRAM de la SRAM)
-new_record:: DS 1            ;; 1 si la última partida batió el récord
+score::      DS SCORE_DIGITS 
+record::     DS SCORE_DIGITS 
+new_record:: DS 1            
 
 SECTION "Save data", SRAM
 save_signature: DS SIGNATURE_SIZE
@@ -15,11 +15,10 @@ save_record:    DS SCORE_DIGITS
 SECTION "Score CODE", ROM0
 
 save_signature_rom:
-   db "PSTR"                ;; este fichero no usa CHARMAP: son letras ASCII normales
+   db "PSTR"               
 
 
-;; score_reset: puntuación a 0 al empezar una partida.
-;; Modifica: A, F, B, HL
+
 score_reset::
    ld hl, score
    ld b, SCORE_DIGITS
@@ -30,14 +29,7 @@ score_reset::
    jr nz, .clear
    ret
 
-;; score_add_digit: suma A (0..9) a un dígito de la puntuación, llevando
-;; el acarreo hacia la izquierda.
-;; Los dígitos son score + 0 (centenas de millar) ... score + 5 (unidades):
-;;    10 puntos -> HL = score + 4 (decenas),  A = 1
-;;   100 puntos -> HL = score + 3 (centenas), A = 1
-;; Con 6 dígitos no se llega nunca a desbordar (999999), así que no se comprueba.
-;; HL = dígito donde sumar, A = cantidad (0..9)
-;; Modifica: A, F, HL
+
 score_add_digit::
    add [hl]                 ;; A = dígito + cantidad
    cp 10
@@ -53,8 +45,7 @@ score_add_digit::
    ld [hud_dirty], a        ;; que el marcador se repinte
    ret
 
-;; record_load: lee el récord de la SRAM. Llamar una vez al arrancar.
-;; Modifica: A, F, BC, DE, HL
+
 record_load::
    ld a, CART_SRAM_ENABLE   ;; abrir la SRAM (escribiendo $0A en $0000)
    ld [rRAMG], a
@@ -91,11 +82,7 @@ record_load::
    ld [rRAMG], a
    ret
 
-;; record_check: si la puntuación supera el récord, lo actualiza y lo guarda.
-;; Llamar al acabar la partida (ganada o perdida).
-;; Se compara dígito a dígito desde el más alto: el primero distinto decide.
-;; new_record = 1 si se batió
-;; Modifica: A, F, BC, DE, HL
+
 record_check::
    xor a
    ld [new_record], a
