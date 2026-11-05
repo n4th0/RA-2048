@@ -1,12 +1,7 @@
-;;=============================================================================
-;; utils.asm — Rutinas de uso general (sincronización, pantalla, memoria)
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;=============================================================================
 INCLUDE "hardware.inc"
 
 SECTION "Utils", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; wait_vblank: espera al INICIO del siguiente VBLANK.
 ;; Primero espera a salir de la línea 144 por si ya estábamos en ella:
 ;; si el bucle del juego fuese muy rápido, sin esto se ejecutaría dos veces
@@ -23,7 +18,6 @@ wait_vblank::
    jr nz, .wait_line_144
    ret
 
-;;-----------------------------------------------------------------------------
 ;; lcd_off: apaga la pantalla para poder escribir en VRAM sin límite de tiempo.
 ;; Apagarla fuera del VBLANK puede dañar el LCD de una Game Boy real,
 ;; por eso esperamos al VBLANK antes.
@@ -39,7 +33,6 @@ lcd_off::
    ld [rLCDC], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; lcd_on: enciende la pantalla con el fondo activo.
 ;; Tiles en $8000 (índices 0..255 sin signo) y tilemap en $9800.
 ;; Modifica: A
@@ -48,10 +41,9 @@ lcd_on::
    ld [rLCDC], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; memcpy: copia BC bytes desde HL hasta DE.
-;; 📥 HL = origen, DE = destino, BC = número de bytes (debe ser > 0)
-;; 📤 HL y DE quedan apuntando justo detrás de lo copiado
+;; HL = origen, DE = destino, BC = número de bytes (debe ser > 0)
+;; HL y DE quedan apuntando justo detrás de lo copiado
 ;; Modifica: A, F, BC, DE, HL
 memcpy::
    ld a, [hl+]
