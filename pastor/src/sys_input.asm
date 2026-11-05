@@ -1,26 +1,15 @@
-;;=============================================================================
-;; sys_input.asm — Sistema de control: mueve al pastor con la cruceta
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Mantener una dirección mueve una casilla cada SHEPHERD_STEP_FRAMES frames.
-;; El primer paso es inmediato: el cooldown solo cuenta tras haber andado.
-;; Si se pulsan varias direcciones a la vez gana una (derecha, izquierda,
-;; arriba, abajo): en una cuadrícula no hay diagonales.
-;;=============================================================================
 INCLUDE "constants.inc"
 
 SECTION "Input system CODE", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; sys_input_update: aplica el mando a las entidades controlables.
 ;; Llamar después de joypad_read.
 sys_input_update::
    ld hl, sys_input_one
    jp man_entity_for_each
 
-;;-----------------------------------------------------------------------------
 ;; sys_input_one: (para for_each) mueve la entidad si es el pastor.
-;; 📥 DE = entidad
+;; DE = entidad
 sys_input_one:
    ld h, d
    ld a, E_TYPE
