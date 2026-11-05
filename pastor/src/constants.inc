@@ -2,7 +2,6 @@
 ;; constants.inc — Constantes compartidas del juego Pastor
 ;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
 ;;
-;; Inclúyelo UNA vez por fichero .asm (con DEF no se puede definir dos veces).
 ;;=============================================================================
 
 ;;-----------------------------------------------------------------------------
@@ -15,9 +14,8 @@ DEF MAP_STRIDE EQU 32
 DEF LEVEL_SIZE EQU SCREEN_W * SCREEN_H   ;; 360 bytes por nivel
 
 ;;-----------------------------------------------------------------------------
-;; Índices de tile. El orden DEBE coincidir con el de tiles.asm.
-;; RSRESET/RB (sesión 05.2) numera solos los índices: añadir un tile es
-;; añadir una línea aquí y su dibujo en tiles.asm.
+;; Índices de tile. El orden debe coincidir con el de tiles.asm.
+;; RSRESET/RB numera solos los índices.
 RSRESET
 DEF TILE_BLANK    RB 1   ;; blanco (fila del marcador y fondo de los textos)
 DEF TILE_GRASS    RB 1   ;; hierba del prado
@@ -91,7 +89,7 @@ DEF AFTER_MESSAGE_NEXT_LEVEL EQU 0
 DEF AFTER_MESSAGE_TITLE      EQU 1
 
 ;;-----------------------------------------------------------------------------
-;; Números de varias cifras: UN DÍGITO POR BYTE (0..9), el más alto primero.
+;; Números de varias cifras: un dígito por byte (0..9), el más alto primero.
 ;; Así sumar es "si pasa de 9, resto 10 y me llevo 1", y pintar un dígito
 ;; es sumarle TILE_DIGIT_0.
 DEF SCORE_DIGITS EQU 6   ;; puntos: 000000 .. 999999
