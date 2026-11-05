@@ -2,16 +2,13 @@ INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 
 SECTION "Joypad state", WRAM0
-joypad_dpad::    DS 1   ;; cruceta pulsada ahora (bits PAD_*)
-joypad_buttons:: DS 1   ;; botones pulsados ahora (bits BTN_*)
+joypad_dpad::    DS 1  
+joypad_buttons:: DS 1   
 joypad_pressed:: DS 1   
 
 SECTION "Joypad CODE", ROM0
 
-;; joypad_read: actualiza joypad_dpad, joypad_buttons y joypad_pressed.
-;; Llamar una vez por frame.
-;; joypad_pressed sirve para START: un toque = una acción, aunque se mantenga.
-;; Modifica: A, F, B
+
 joypad_read::
 
    ld a, $20
