@@ -1,9 +1,7 @@
 
 INCLUDE "constants.inc"
 
-;; ALIGN[8]: el array empieza en $xx00. Como ocupa
-;; menos de 256 bytes, la parte alta de la dirección no cambia nunca: para
-;; pasar de una entidad a la siguiente basta con sumar a la parte baja.
+
 SECTION "Entities", WRAM0, ALIGN[8]
 entity_array:: DS MAX_ENTITIES * SIZEOF_ENTITY
 
