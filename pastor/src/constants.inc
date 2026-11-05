@@ -1,10 +1,4 @@
-;;=============================================================================
-;; constants.inc — Constantes compartidas del juego Pastor
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;;=============================================================================
 
-;;-----------------------------------------------------------------------------
 ;; Pantalla y tilemap
 ;; El tilemap mide 32x32 tiles, pero solo se ven 20x18. Por eso al pintar
 ;; una fila hay que saltar MAP_STRIDE - SCREEN_W tiles para llegar a la siguiente.
@@ -13,7 +7,6 @@ DEF SCREEN_H   EQU 18
 DEF MAP_STRIDE EQU 32
 DEF LEVEL_SIZE EQU SCREEN_W * SCREEN_H   ;; 360 bytes por nivel
 
-;;-----------------------------------------------------------------------------
 ;; Índices de tile. El orden debe coincidir con el de tiles.asm.
 ;; RSRESET/RB numera solos los índices.
 RSRESET
@@ -30,7 +23,6 @@ DEF TILE_DIGIT_0  RB 10  ;; dígitos 0..9 seguidos: tile = TILE_DIGIT_0 + valor
 DEF TILE_FONT_A   RB 26  ;; letras A..Z seguidas (ver charmap.inc)
 DEF NUM_TILES     RB 0
 
-;;-----------------------------------------------------------------------------
 ;; Entidades (ECS). Struct de 8 bytes, como en la sesión 05.2.
 ;; Campo = base de la entidad + desplazamiento.
 RSRESET
@@ -66,7 +58,6 @@ DEF SHEEP_GRAZE_CHANCE   EQU 16  ;; si no huyen: paso al azar si el número alea
 DEF END_OF_LIST   EQU $FF
 DEF END_OF_SHEEP  EQU $FE  ;; seguido por cero o más posiciones de lobo
 
-;;-----------------------------------------------------------------------------
 ;; Mando: bits de joypad_dpad y joypad_buttons, como en la sesión 02.2
 ;; (1 = pulsado; joypad.asm ya los da la vuelta)
 DEF PAD_RIGHT  EQU 0
@@ -78,7 +69,6 @@ DEF BTN_B      EQU 1
 DEF BTN_SELECT EQU 2
 DEF BTN_START  EQU 3
 
-;;-----------------------------------------------------------------------------
 ;; Escenas (índices de la tabla de scene_manager.asm)
 DEF SCENE_TITLE   EQU 0
 DEF SCENE_GAME    EQU 1
@@ -88,14 +78,12 @@ DEF SCENE_MESSAGE EQU 2
 DEF AFTER_MESSAGE_NEXT_LEVEL EQU 0
 DEF AFTER_MESSAGE_TITLE      EQU 1
 
-;;-----------------------------------------------------------------------------
 ;; Números de varias cifras: un dígito por byte (0..9), el más alto primero.
 ;; Así sumar es "si pasa de 9, resto 10 y me llevo 1", y pintar un dígito
 ;; es sumarle TILE_DIGIT_0.
 DEF SCORE_DIGITS EQU 6   ;; puntos: 000000 .. 999999
 DEF TIME_DIGITS  EQU 3   ;; segundos: 000 .. 999
 
-;;-----------------------------------------------------------------------------
 ;; Niveles: cada entrada de level_table es mapa (dw), spawns (dw) y tiempo
 ;; (TIME_DIGITS bytes, p. ej. db 1, 2, 0 = 120 s)
 DEF NUM_LEVELS         EQU 5
