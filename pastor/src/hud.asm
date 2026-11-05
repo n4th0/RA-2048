@@ -22,13 +22,13 @@ hud_level_text:
 hud_time_text:
    db "T", END_OF_LIST
 
-;; hud_init: encola el marcador completo. Llamar al empezar cada nivel,
+;; hud_init: encola el marcador completo.
 ;; Modifica: A, F, BC, DE, HL
 hud_init::
    ld hl, HUD_LEVEL
    ld de, hud_level_text
    call queue_text
-   ld a, [current_level]    ;; el nivel se muestra desde 1
+   ld a, [current_level]    
    inc a
    add TILE_DIGIT_0
    ld hl, HUD_LEVEL + 1
@@ -66,7 +66,7 @@ hud_update::
    ld b, SCORE_DIGITS
    call queue_digits
 
-   ;; sheep_left (0..99) a 2 dígitos: decenas = cuántas veces cabe 10
+   ;; sheep_left (0..99) a 2 dígitos: decenas
    ld a, [sheep_left]
    ld b, 0                  
 .tens:
