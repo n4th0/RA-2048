@@ -1,7 +1,4 @@
 
-;; Las entidades viven en un array de MAX_ENTITIES structs de SIZEOF_ENTITY
-;; bytes. Los sistemas solo saben procesar UNA entidad; el gestor es quien
-;; sabe recorrerlas todas (man_entity_for_each).
 INCLUDE "constants.inc"
 
 ;; ALIGN[8]: el array empieza en $xx00. Como ocupa
@@ -15,8 +12,7 @@ for_each_routine: DS 2
 
 SECTION "Entity Manager CODE", ROM0
 
-;; man_entity_init: deja todas las entidades libres (array entero a 0).
-;; Modifica: A, F, B, HL
+
 man_entity_init::
    ld hl, entity_array
    ld b, MAX_ENTITIES * SIZEOF_ENTITY
@@ -27,10 +23,7 @@ man_entity_init::
    jr nz, .clear
    ret
 
-;; man_entity_alloc: busca una entidad libre, la marca como usada y pone a 0
-;; el resto de sus campos.
-;; DE = entidad reservada y carry a 0, o carry a 1 si el array está lleno
-;; Modifica: A, F, B, DE
+
 man_entity_alloc::
    ld de, entity_array
    ld b, MAX_ENTITIES
@@ -60,10 +53,7 @@ man_entity_alloc::
    pop de
    ret
 
-;; man_entity_for_each: llama a una rutina por cada entidad activa.
-;; HL = rutina. La recibe con DE = entidad y puede modificar cualquier
-;; registro: aquí se guardan BC y DE antes de llamarla.
-;; Modifica: A, F, BC, DE, HL
+
 man_entity_for_each::
    ld a, l                  ;; guardar la rutina
    ld [for_each_routine], a
@@ -96,10 +86,7 @@ man_entity_for_each::
    jr nz, .loop
    ret
 
-;; man_entity_at: ¿hay alguna entidad activa en la casilla (B, C)?
-;; B = fila, C = columna
-;; carry a 1 si está ocupada, carry a 0 si está libre
-;; Modifica: A, F, E, HL
+
 man_entity_at::
    ld hl, entity_array
    ld e, MAX_ENTITIES
