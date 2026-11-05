@@ -5,8 +5,7 @@ melody_ptr: DS 2
 
 SECTION "Sound CODE", ROM0
 
-;; Encender la APU, fijar volumen y enviar el canal 1 a ambos altavoces.
-;; Llamar una vez durante la inicialización.
+
 sfx_init::
    ld a, $80
    ldh [$FF26], a           ;; NR52: APU encendida
@@ -16,7 +15,7 @@ sfx_init::
    ldh [$FF25], a           ;; NR51: canal 1 en ambos lados
    ret
 
-;; Tono breve cuando una oveja queda encerrada.
+
 sfx_sheep_in::
    xor a
    ldh [$FF10], a           ;; NR10: sin barrido
@@ -30,7 +29,7 @@ sfx_sheep_in::
    ldh [$FF14], a           ;; NR14: iniciar tono, activar longitud
    ret
 
-;; Melodía ascendente al completar un nivel. Cada nota dura 12 frames.
+
 music_level_clear_start::
    xor a
    ldh [$FF10], a           ;; NR10: sin barrido
@@ -44,7 +43,7 @@ music_level_clear_start::
    call music_play_note
    ret
 
-;; Avanza la melodía una vez por frame mientras se muestra el mensaje.
+
 music_update::
    ld a, [melody_timer]
    and a
@@ -68,7 +67,7 @@ music_update::
    call music_play_note
    ret
 
-;; Detiene cualquier nota pendiente, por ejemplo al pulsar START.
+
 music_stop::
    xor a
    ld [melody_timer], a
@@ -76,7 +75,7 @@ music_stop::
    ldh [$FF12], a           ;; NR12: volumen 0
    ret
 
-;; HL apunta a frecuencia baja, frecuencia alta y duración en frames.
+
 music_play_note:
    ld a, [hl+]
    ldh [$FF13], a           ;; NR13: frecuencia baja
@@ -94,7 +93,7 @@ music_play_note:
    ld [melody_ptr + 1], a
    ret
 
-;; Arpegio mayor ascendente: do, mi, sol, do agudo y cierre.
+
 melody_notes:
    db $0C, $06, 12          ;; do 4
    db $73, $06, 12          ;; mi 4
