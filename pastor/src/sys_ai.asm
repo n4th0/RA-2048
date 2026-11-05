@@ -1,17 +1,3 @@
-;;=============================================================================
-;; sys_ai.asm — IA: ovejas huyen del pastor y del lobo
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Cada SHEEP_STEP_FRAMES frames, cada oveja decide:
-;;  - Si el pastor o el lobo están cerca (|dx| + |dy| <= SHEEP_SCARE_DISTANCE), da un paso
-;;    alejándose por el eje en el que está más lejos. Si ese paso está
-;;    bloqueado, prueba el otro eje; si ninguno vale, se queda quieta.
-;;  - Si no, a veces (SHEEP_GRAZE_CHANCE de cada 256) da un paso al azar.
-;; Las ovejas encerradas hacen lo mismo, pero solo pueden pisar suelo de corral.
-;;
-;; dy y dx tienen signo: positivo = la oveja está debajo / a la derecha del
-;; objetivo. Los negativos son "dar la vuelta" en 8 bits: -1 = $FF (sesión 03.1).
-;;=============================================================================
 INCLUDE "constants.inc"
 
 SECTION "AI state", WRAM0
@@ -28,7 +14,6 @@ ai_entity_type: DS 1         ;; tipo de la oveja que se está procesando
 
 SECTION "AI system CODE", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; sys_ai_update: localiza al pastor y aplica la IA a cada oveja.
 ;; Llamar después de sys_input_update (así reaccionan en el mismo frame).
 sys_ai_update::
@@ -39,9 +24,8 @@ sys_ai_update::
    ld hl, sys_ai_one
    jp man_entity_for_each
 
-;;-----------------------------------------------------------------------------
 ;; ai_find_player: (para for_each) si es el pastor, guarda su posición.
-;; 📥 DE = entidad
+;; DE = entidad
 ai_find_player:
    ld h, d
    ld a, E_TYPE
@@ -81,9 +65,8 @@ ai_find_player:
    ld [ai_player_x], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; sys_ai_one: (para for_each) decide el paso de una oveja.
-;; 📥 DE = entidad
+;; DE = entidad
 sys_ai_one:
    ld h, d
    ld a, E_TYPE
@@ -259,12 +242,11 @@ directions:
    db  0, -1                ;; izquierda
    db  0,  1                ;; derecha
 
-;;-----------------------------------------------------------------------------
 ;; ai_flee_vertical: un paso alejándose en vertical.
 ;; Si oveja y pastor están en la misma fila no hay "lejos": se prueba
 ;; un sentido al azar y, si está bloqueado, el contrario.
-;; 📥 DE = entidad, B, C = posición actual
-;; 📤 carry a 0 si se movió, a 1 si no
+;; DE = entidad, B, C = posición actual
+;; carry a 0 si se movió, a 1 si no
 ai_flee_vertical:
    ld l, 0                  ;; en vertical, dx = 0
    ld a, [ai_dy]
@@ -287,7 +269,6 @@ ai_flee_vertical:
    ld h, a
    jp ai_try_offset
 
-;;-----------------------------------------------------------------------------
 ;; ai_flee_horizontal: igual que ai_flee_vertical, pero en horizontal.
 ai_flee_horizontal:
    ld h, 0                  ;; en horizontal, dy = 0
@@ -311,11 +292,10 @@ ai_flee_horizontal:
    ld l, a
    jp ai_try_offset
 
-;;-----------------------------------------------------------------------------
 ;; ai_try_offset: mueve la oveja a (B + H, C + L) si se puede.
 ;; Una oveja encerrada solo puede pisar suelo de corral.
-;; 📥 DE = entidad, B, C = posición actual, H = dy, L = dx (con signo)
-;; 📤 carry a 0 si se movió, a 1 si no. Conserva BC y DE.
+;; DE = entidad, B, C = posición actual, H = dy, L = dx (con signo)
+;; carry a 0 si se movió, a 1 si no. Conserva BC y DE.
 ;; Modifica: A, F, HL
 ai_try_offset:
    push bc
@@ -358,7 +338,6 @@ ai_try_offset:
    pop bc                   ;; pop no toca los flags
    ret
 
-;;-----------------------------------------------------------------------------
 ;; abs_a: valor absoluto de A (con signo).
 ;; Modifica: A, F (conserva BC, DE y HL)
 abs_a:
