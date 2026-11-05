@@ -1,14 +1,3 @@
-;;=============================================================================
-;; charmap.inc — Traducción de caracteres a índices de tile
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Con CHARMAP, `db "PASTOR"` o `db "#..#"` se ensamblan directamente como
-;; índices de tile: los mapas y los textos se escriben como si fueran dibujos.
-;; Incluir DESPUÉS de constants.inc.
-;;   Mapas:  " " blanco  "." hierba  "#" valla  ":" corral
-;;   Textos: A..Z (sin tildes ni Ñ), 0..9 y espacio
-;;=============================================================================
-
 CHARMAP " ", TILE_BLANK
 CHARMAP ".", TILE_GRASS
 CHARMAP "#", TILE_FENCE
