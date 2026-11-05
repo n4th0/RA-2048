@@ -1,12 +1,3 @@
-;;=============================================================================
-;; sys_corral.asm — Sistema del corral: encierra ovejas y detecta la victoria
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Una oveja suelta que pisa suelo de corral pasa a TYPE_SHEEP_PENNED
-;; (a partir de ahí la IA no la deja salir), descuenta sheep_left y suma
-;; 10 puntos.
-;; Cuando sheep_left llega a 0, game_won = 1.
-;;=============================================================================
 INCLUDE "constants.inc"
 
 SECTION "Corral state", WRAM0
@@ -15,7 +6,6 @@ game_won::   DS 1            ;; 1 cuando están todas dentro
 
 SECTION "Corral system CODE", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; sys_corral_init: cuenta las ovejas del nivel.
 ;; Llamar después de crear las entidades.
 sys_corral_init::
@@ -25,9 +15,8 @@ sys_corral_init::
    ld hl, count_loose_sheep
    jp man_entity_for_each
 
-;;-----------------------------------------------------------------------------
 ;; count_loose_sheep: (para for_each) suma 1 a sheep_left si es oveja suelta.
-;; 📥 DE = entidad
+;; DE = entidad
 count_loose_sheep:
    ld h, d
    ld a, E_TYPE
@@ -40,7 +29,6 @@ count_loose_sheep:
    inc [hl]
    ret
 
-;;-----------------------------------------------------------------------------
 ;; sys_corral_update: encierra las ovejas que han entrado y comprueba victoria.
 ;; Llamar después de sys_ai_update.
 sys_corral_update::
@@ -53,9 +41,8 @@ sys_corral_update::
    ld [game_won], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; sys_corral_one: (para for_each) si una oveja suelta pisa corral, la encierra.
-;; 📥 DE = entidad
+;; DE = entidad
 sys_corral_one:
    ld h, d
    ld a, E_TYPE
