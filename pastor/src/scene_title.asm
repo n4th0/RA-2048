@@ -1,11 +1,3 @@
-;;=============================================================================
-;; scene_title.asm — Pantalla de título
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Los textos se colocan a mano: dirección = $9800 + fila * 32 + columna,
-;; como en el ejemplo de la sesión 03.1. Para centrar un texto de N letras,
-;; columna = (20 - N) / 2.
-;;=============================================================================
 INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
@@ -20,7 +12,6 @@ blink_visible: DS 1          ;; no leemos la VRAM para saberlo: fuera del VBLANK
 
 SECTION "Scene title CODE", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; scene_title_enter: dibuja el título y pasa a esta escena.
 scene_title_enter::
    call lcd_off
@@ -66,7 +57,6 @@ scene_title_enter::
    ld [scene_id], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; scene_title_update: hace parpadear PULSA START y espera a START.
 scene_title_update::
    call sys_render_flush
