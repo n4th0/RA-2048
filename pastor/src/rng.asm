@@ -15,14 +15,14 @@ rng_init::
 rng_next::
    push bc
    ld a, [rng_state]
-   ld b, a                  ;; B = estado
-   add a                    ;; A = estado * 2
-   add a                    ;; A = estado * 4
-   add b                    ;; A = estado * 5  (los 8 bits dan la vuelta: módulo 256)
-   inc a                    ;; + 1
+   ld b, a                  
+   add a                    
+   add a                   
+   add b                    
+   inc a                   
    ld b, a
    ldh a, [rDIV]
-   add b                    ;; + rDIV
+   add b                    
    ld [rng_state], a
    pop bc
    ret
@@ -31,7 +31,7 @@ rng_next::
 
 rng_sign::
    call rng_next
-   bit 0, a                 ;; mirar solo un bit: mitad de veces 0, mitad 1
+   bit 0, a                 
    ld a, 1
    ret z
    ld a, -1
