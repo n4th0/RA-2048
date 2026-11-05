@@ -2,19 +2,16 @@ INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
 
-DEF MIN_SHOW_FRAMES EQU 30   ;; ignora START al principio: si no, un toque
-                             ;; tardío del juego se saltaría el mensaje
+DEF MIN_SHOW_FRAMES EQU 30   
+                             
 
 SECTION "Scene message state", WRAM0
-after_message: DS 1          ;; AFTER_MESSAGE_*
+after_message: DS 1          
 show_timer:    DS 1
 
 SECTION "Scene message CODE", ROM0
 
-;; scene_message_enter: dibuja el mensaje y pasa a esta escena.
-;; HL = dónde escribir el título en el tilemap (ya centrado por quien llama)
-;; DE = título (acabado en END_OF_LIST)
-;; B  = qué hacer con START (AFTER_MESSAGE_NEXT_LEVEL / _TITLE)
+
 scene_message_enter::
    ld a, b
    ld [after_message], a
@@ -26,33 +23,33 @@ scene_message_enter::
    call level_load
    pop hl
    pop de
-   call print_text          ;; el título
+   call print_text         
 
-   ld hl, _SCRN0 + 9 * MAP_STRIDE + 3     ;; "PUNTOS " y 6 dígitos (13): columna 3
+   ld hl, _SCRN0 + 9 * MAP_STRIDE + 3     
    ld de, text_points
    call print_text
    ld de, score
    ld b, SCORE_DIGITS
    call print_digits
 
-   ld hl, _SCRN0 + 11 * MAP_STRIDE + 3    ;; "RECORD " y 6 dígitos
+   ld hl, _SCRN0 + 11 * MAP_STRIDE + 3    
    ld de, text_record
    call print_text
    ld de, record
    ld b, SCORE_DIGITS
    call print_digits
 
-   ld a, [after_message]    ;; "NUEVO RECORD" solo al acabar la partida
+   ld a, [after_message]    
    cp AFTER_MESSAGE_TITLE
    jr nz, .no_record
    ld a, [new_record]
    cp 0
    jr z, .no_record
-   ld hl, _SCRN0 + 13 * MAP_STRIDE + 4    ;; "NUEVO RECORD" (12): columna 4
+   ld hl, _SCRN0 + 13 * MAP_STRIDE + 4   
    ld de, text_new_record
    call print_text
 .no_record:
-   ld hl, _SCRN0 + 15 * MAP_STRIDE + 4    ;; "PULSA START" (11): columna 4
+   ld hl, _SCRN0 + 15 * MAP_STRIDE + 4    
    ld de, text_press_start_msg
    call print_text
 
