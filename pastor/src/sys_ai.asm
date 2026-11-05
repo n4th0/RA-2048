@@ -8,14 +8,13 @@ ai_wolf_1_x:    DS 1
 ai_wolf_2_y:    DS 1
 ai_wolf_2_x:    DS 1
 ai_wolf_count:  DS 1
-ai_dy:          DS 1         ;; oveja.y - pastor.y
-ai_dx:          DS 1         ;; oveja.x - pastor.x
-ai_entity_type: DS 1         ;; tipo de la oveja que se está procesando
+ai_dy:          DS 1        
+ai_dx:          DS 1         
+ai_entity_type: DS 1         
 
 SECTION "AI system CODE", ROM0
 
-;; sys_ai_update: localiza al pastor y aplica la IA a cada oveja.
-;; Llamar después de sys_input_update (así reaccionan en el mismo frame).
+
 sys_ai_update::
    xor a
    ld [ai_wolf_count], a
@@ -24,14 +23,13 @@ sys_ai_update::
    ld hl, sys_ai_one
    jp man_entity_for_each
 
-;; ai_find_player: (para for_each) si es el pastor, guarda su posición.
-;; DE = entidad
+
 ai_find_player:
    ld h, d
    ld a, E_TYPE
    add e
    ld l, a
-   ld a, [hl+]              ;; A = tipo, HL -> E_Y
+   ld a, [hl+]             
    cp TYPE_SHEPHERD
    jr z, .shepherd
    cp TYPE_WOLF
@@ -65,8 +63,7 @@ ai_find_player:
    ld [ai_player_x], a
    ret
 
-;; sys_ai_one: (para for_each) decide el paso de una oveja.
-;; DE = entidad
+
 sys_ai_one:
    ld h, d
    ld a, E_TYPE
@@ -83,7 +80,6 @@ sys_ai_one:
 .is_sheep:
    ld [ai_entity_type], a
 
-   ;;--- Solo decide cada SHEEP_STEP_FRAMES frames ---
    ld a, E_COOLDOWN
    add e
    ld l, a
@@ -102,7 +98,6 @@ sys_ai_one:
    inc l
    ld c, [hl]
 
-   ;;--- dy = oveja.y - pastor.y ;  dx = oveja.x - pastor.x ---
    ld a, [ai_player_y]
    ld l, a
    ld a, b
@@ -114,7 +109,6 @@ sys_ai_one:
    sub l
    ld [ai_dx], a
 
-   ;;--- ¿Está el pastor cerca? distancia = |dy| + |dx| ---
    ld a, [ai_dy]
    call abs_a
    ld h, a                  ;; H = |dy|
@@ -125,7 +119,6 @@ sys_ai_one:
    cp SHEEP_SCARE_DISTANCE + 1
    jr c, .flee               ;; pastor cerca
 
-   ;; Si el pastor no está cerca, comprobar si alguno de los lobos lo está.
    ld a, [ai_wolf_count]
    and a
    jp z, .graze
@@ -242,11 +235,7 @@ directions:
    db  0, -1                ;; izquierda
    db  0,  1                ;; derecha
 
-;; ai_flee_vertical: un paso alejándose en vertical.
-;; Si oveja y pastor están en la misma fila no hay "lejos": se prueba
-;; un sentido al azar y, si está bloqueado, el contrario.
-;; DE = entidad, B, C = posición actual
-;; carry a 0 si se movió, a 1 si no
+
 ai_flee_vertical:
    ld l, 0                  ;; en vertical, dx = 0
    ld a, [ai_dy]
@@ -269,7 +258,7 @@ ai_flee_vertical:
    ld h, a
    jp ai_try_offset
 
-;; ai_flee_horizontal: igual que ai_flee_vertical, pero en horizontal.
+
 ai_flee_horizontal:
    ld h, 0                  ;; en horizontal, dy = 0
    ld a, [ai_dx]
@@ -292,11 +281,7 @@ ai_flee_horizontal:
    ld l, a
    jp ai_try_offset
 
-;; ai_try_offset: mueve la oveja a (B + H, C + L) si se puede.
-;; Una oveja encerrada solo puede pisar suelo de corral.
-;; DE = entidad, B, C = posición actual, H = dy, L = dx (con signo)
-;; carry a 0 si se movió, a 1 si no. Conserva BC y DE.
-;; Modifica: A, F, HL
+
 ai_try_offset:
    push bc
    ld a, b
@@ -338,8 +323,7 @@ ai_try_offset:
    pop bc                   ;; pop no toca los flags
    ret
 
-;; abs_a: valor absoluto de A (con signo).
-;; Modifica: A, F (conserva BC, DE y HL)
+
 abs_a:
    bit 7, a
    ret z                    ;; positivo: se queda igual
