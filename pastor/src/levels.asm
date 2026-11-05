@@ -1,86 +1,69 @@
-;;=============================================================================
-;; levels.asm — Mapas de los niveles (datos en ROM)
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Cada nivel son 18 filas de 20 caracteres. CHARMAP (charmap.inc) traduce
-;; cada carácter a su índice de tile, así el nivel se edita como un dibujo:
-;;    " " blanco (fila 0, reservada para el marcador)
-;;    "." hierba     "#" valla     ":" suelo del corral
-;; Pastor, ovejas y lobo NO van en el mapa: son entidades. Cada nivel tiene
-;; además una lista de "spawns" con sus posiciones iniciales. En niveles con
-;; lobo, END_OF_SHEEP precede a la posición del lobo.
-;;=============================================================================
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
 
 SECTION "Levels", ROM0
 
 level_1::
-   db "                    "   ;;  0 marcador
-   db "####################"   ;;  1
-   db "#..................#"   ;;  2
-   db "#..................#"   ;;  3
-   db "#...###............#"   ;;  4
-   db "#..................#"   ;;  5
-   db "#.........#........#"   ;;  6
-   db "#.........#........#"   ;;  7
-   db "#..................#"   ;;  8
-   db "#..................#"   ;;  9
-   db "#............##::###"   ;; 10 entrada del corral (columnas 15-16)
-   db "#............#:::::#"   ;; 11
-   db "#............#:::::#"   ;; 12
-   db "#............#:::::#"   ;; 13
-   db "#............#:::::#"   ;; 14
-   db "#............#:::::#"   ;; 15
-   db "#............#:::::#"   ;; 16
-   db "####################"   ;; 17
+   db "                    "   
+   db "####################"   
+   db "#..................#"   
+   db "#..................#"   
+   db "#...###............#"   
+   db "#..................#"   
+   db "#.........#........#"   
+   db "#.........#........#"   
+   db "#..................#"   
+   db "#..................#"   
+   db "#............##::###"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "####################"   
 level_1_end:
 
-;; Una fila con un carácter de más o de menos descuadraría todo el mapa:
-;; mejor que falle el ensamblado.
+
 ASSERT level_1_end - level_1 == LEVEL_SIZE, "level_1 no mide 20x18"
 
-;; Posiciones iniciales: primero el pastor, después las ovejas (fila, columna).
-;; La lista acaba en el centinela END_OF_LIST. Máximo MAX_ENTITIES - 1 ovejas.
-;; Cada posición tiene que caer en hierba o corral, nunca en una valla.
+
 level_1_spawns::
-   db  8,  4                ;; pastor
-   db  3, 10                ;; ovejas
+   db  8,  4                
+   db  3, 10                
    db  6, 15
    db  8, 12
    db 13,  5
    db 15,  9
    db END_OF_LIST
 
-;;-----------------------------------------------------------------------------
-;; Nivel 2: 7 ovejas. Corral arriba en el centro, entrada hacia abajo.
-;; Hay que subirlas: las que se peguen a la valla de arriba se llevan por las
-;; paredes del corral (columnas 6 y 14) hasta la fila 6.
+
+
 level_2::
-   db "                    "   ;;  0 marcador
-   db "####################"   ;;  1
-   db "#......#:::::#.....#"   ;;  2
-   db "#......#:::::#.....#"   ;;  3
-   db "#......#:::::#.....#"   ;;  4
-   db "#......###::##.....#"   ;;  5 entrada del corral (columnas 10-11)
-   db "#..................#"   ;;  6
-   db "#....##......##....#"   ;;  7
-   db "#..................#"   ;;  8
-   db "#..#............#..#"   ;;  9
-   db "#..#....####....#..#"   ;; 10
-   db "#..#............#..#"   ;; 11
-   db "#..................#"   ;; 12
-   db "#....##......##....#"   ;; 13
-   db "#..................#"   ;; 14
-   db "#..................#"   ;; 15
-   db "#..................#"   ;; 16
-   db "####################"   ;; 17
+   db "                    "   
+   db "####################"   
+   db "#......#:::::#.....#"   
+   db "#......#:::::#.....#"   
+   db "#......#:::::#.....#"   
+   db "#......###::##.....#"   
+   db "#..................#"   
+   db "#....##......##....#"   
+   db "#..................#"   
+   db "#..#............#..#"   
+   db "#..#....####....#..#"   
+   db "#..#............#..#"   
+   db "#..................#"   
+   db "#....##......##....#"   
+   db "#..................#"   
+   db "#..................#"   
+   db "#..................#"   
+   db "####################"   
 level_2_end:
 ASSERT level_2_end - level_2 == LEVEL_SIZE, "level_2 no mide 20x18"
 
 level_2_spawns::
-   db 15,  9                ;; pastor
-   db  8,  3                ;; ovejas
+   db 15,  9                
+   db  8,  3                
    db  8, 16
    db 12,  6
    db 12, 13
@@ -89,37 +72,31 @@ level_2_spawns::
    db  8,  9
    db END_OF_LIST
 
-;;-----------------------------------------------------------------------------
-;; Nivel 3: 9 ovejas. Corral en el centro, entrada por la izquierda, y un
-;; pasillo de 1 casilla entre el corral y la pared derecha.
-;; Como el corral no toca la valla exterior, una oveja pegada a ella solo
-;; podría dar vueltas por el borde. Los dos espigones (filas 2 y 16) lo evitan:
-;; empujada contra uno, resbala hacia el prado. tests/level_check.py lo comprueba.
 level_3::
-   db "                    "   ;;  0 marcador
-   db "####################"   ;;  1
-   db "#.........#........#"   ;;  2 espigón: despega de la valla a las ovejas
-   db "#..###........###..#"   ;;  3
-   db "#..................#"   ;;  4
-   db "#.......#..........#"   ;;  5
-   db "#.......#..........#"   ;;  6
-   db "#..........#######.#"   ;;  7
-   db "#..##......#:::::#.#"   ;;  8
-   db "#..........::::::#.#"   ;;  9 entrada del corral (columna 11, filas 9-10)
-   db "#..........::::::#.#"   ;; 10
-   db "#..##......#:::::#.#"   ;; 11
-   db "#..........#######.#"   ;; 12
-   db "#.......#..........#"   ;; 13
-   db "#.......#..........#"   ;; 14
-   db "#..###........###..#"   ;; 15
-   db "#........#.........#"   ;; 16 espigón
-   db "####################"   ;; 17
+   db "                    "   
+   db "####################"   
+   db "#.........#........#"   
+   db "#..###........###..#"   
+   db "#..................#"   
+   db "#.......#..........#"   
+   db "#.......#..........#"   
+   db "#..........#######.#"   
+   db "#..##......#:::::#.#"   
+   db "#..........::::::#.#"   
+   db "#..........::::::#.#"   
+   db "#..##......#:::::#.#"   
+   db "#..........#######.#"   
+   db "#.......#..........#"   
+   db "#.......#..........#"   
+   db "#..###........###..#"   
+   db "#........#.........#"   
+   db "####################"   
 level_3_end:
 ASSERT level_3_end - level_3 == LEVEL_SIZE, "level_3 no mide 20x18"
 
 level_3_spawns::
-   db 14, 10                ;; pastor
-   db  2,  5                ;; ovejas
+   db 14, 10                
+   db  2,  5                
    db  2, 15
    db  4, 10
    db  6,  4
@@ -130,68 +107,64 @@ level_3_spawns::
    db 16,  4
    db END_OF_LIST
 
-;;-----------------------------------------------------------------------------
-;; Nivel 4: el lobo ronda por el prado; las ovejas también huyen de él.
 level_4::
-   db "                    "   ;;  0 marcador
-   db "####################"   ;;  1
-   db "#..................#"   ;;  2
-   db "#..###.............#"   ;;  3
-   db "#..................#"   ;;  4
-   db "#.........#........#"   ;;  5
-   db "#.........#........#"   ;;  6
-   db "#..................#"   ;;  7
-   db "#......##..........#"   ;;  8
-   db "#..................#"   ;;  9
-   db "#............##::###"   ;; 10 entrada del corral
-   db "#............#:::::#"   ;; 11
-   db "#............#:::::#"   ;; 12
-   db "#............#:::::#"   ;; 13
-   db "#............#:::::#"   ;; 14
-   db "#............#:::::#"   ;; 15
-   db "#............#:::::#"   ;; 16
-   db "####################"   ;; 17
+   db "                    "   
+   db "####################"   
+   db "#..................#"   
+   db "#..###.............#"   
+   db "#..................#"   
+   db "#.........#........#"   
+   db "#.........#........#"   
+   db "#..................#"   
+   db "#......##..........#"   
+   db "#..................#"   
+   db "#............##::###"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "#............#:::::#"   
+   db "####################"   
 level_4_end:
 ASSERT level_4_end - level_4 == LEVEL_SIZE, "level_4 no mide 20x18"
 
 level_4_spawns::
-   db  8,  4                ;; pastor
-   db  3, 10                ;; ovejas
+   db  8,  4                
+   db  3, 10                
    db  6, 15
    db  8, 12
    db 13,  5
    db 15,  9
    db END_OF_SHEEP
-   db  5,  5                ;; lobo
+   db  5,  5                
    db END_OF_LIST
 
-;;-----------------------------------------------------------------------------
-;; Nivel 5: un prado más amplio con dos grupos de ovejas y dos lobos.
+
 level_5::
-   db "                    "   ;;  0 marcador
-   db "####################"   ;;  1
-   db "#..................#"   ;;  2
-   db "#..#...........#...#"   ;;  3
-   db "#..#...........#...#"   ;;  4
-   db "#.................##"   ;;  5
-   db "#....##............#"   ;;  6
-   db "#..................#"   ;;  7
-   db "#..........##......#"   ;;  8
-   db "#..................#"   ;;  9
-   db "###:###............#"   ;; 10 entrada del corral
-   db "#:::::#............#"   ;; 11
-   db "#:::::#....##......#"   ;; 12
-   db "#:::::#............#"   ;; 13
-   db "#:::::#............#"   ;; 14
-   db "#:::::#............#"   ;; 15
-   db "#:::::#............#"   ;; 16
-   db "####################"   ;; 17
+   db "                    "   
+   db "####################"   
+   db "#..................#"   
+   db "#..#...........#...#"   
+   db "#..#...........#...#"   
+   db "#.................##"   
+   db "#....##............#"   
+   db "#..................#"   
+   db "#..........##......#"   
+   db "#..................#"   
+   db "###:###............#"   
+   db "#:::::#............#"   
+   db "#:::::#....##......#"   
+   db "#:::::#............#"   
+   db "#:::::#............#"   
+   db "#:::::#............#"   
+   db "#:::::#............#"   
+   db "####################"   
 level_5_end:
-ASSERT level_5_end - level_5 == LEVEL_SIZE, "level_5 no mide 20x18"
 
 level_5_spawns::
-   db  8, 10                ;; pastor
-   db  3,  6                ;; ovejas
+   db  8, 10                
+   db  3,  6                
    db  4, 10
    db  7, 15
    db  9,  5
@@ -199,30 +172,24 @@ level_5_spawns::
    db 14, 15
    db 15,  9
    db END_OF_SHEEP
-   db  7,  9                ;; lobos
+   db  7,  9                
    db  3, 10
    db END_OF_LIST
 
-;;-----------------------------------------------------------------------------
-;; Tabla de niveles: mapa, spawns y tiempo en segundos (un dígito por byte).
-;; Tiempos de los tres primeros niveles conservados; los niveles con lobo dan
-;; más margen para conducir las ovejas mientras el lobo las dispersa.
 level_table::
    dw level_1, level_1_spawns
-   db 1, 2, 0               ;; 120 s
+   db 1, 2, 0               
    dw level_2, level_2_spawns
-   db 1, 5, 0               ;; 150 s
+   db 1, 5, 0               
    dw level_3, level_3_spawns
-   db 2, 1, 0               ;; 210 s
+   db 2, 1, 0               
    dw level_4, level_4_spawns
-   db 2, 4, 0               ;; 240 s
+   db 2, 4, 0               
    dw level_5, level_5_spawns
-   db 3, 0, 0               ;; 300 s
+   db 3, 0, 0               
 level_table_end:
 ASSERT level_table_end - level_table == NUM_LEVELS * LEVEL_ENTRY_SIZE, "level_table no cuadra con NUM_LEVELS"
 
-;;-----------------------------------------------------------------------------
-;; Fondo de las pantallas de título y mensajes: prado con valla
 screen_frame::
    db "                    "
    db "####################"
