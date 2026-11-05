@@ -5,16 +5,13 @@ rng_state: DS 1
 
 SECTION "RNG CODE", ROM0
 
-;; rng_init: estado inicial a partir de rDIV.
-;; Modifica: A
+
 rng_init::
    ldh a, [rDIV]
    ld [rng_state], a
    ret
 
-;; rng_next: siguiente número aleatorio.
-;; A = número (0..255)
-;; Modifica: A, F (conserva BC, DE y HL)
+
 rng_next::
    push bc
    ld a, [rng_state]
@@ -31,9 +28,7 @@ rng_next::
    ret
 
 
-;; rng_sign: +1 o -1 al azar.
-;; A = 1 o -1 ($FF)
-;; Modifica: A, F
+
 rng_sign::
    call rng_next
    bit 0, a                 ;; mirar solo un bit: mitad de veces 0, mitad 1
