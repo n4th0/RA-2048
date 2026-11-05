@@ -2,7 +2,7 @@
 SECTION "Header", ROM0[$100]
 
    nop     
-   ; di    
+
    jp main 
 
    
