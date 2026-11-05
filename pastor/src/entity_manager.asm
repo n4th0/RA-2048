@@ -11,7 +11,7 @@ SECTION "Entities", WRAM0, ALIGN[8]
 entity_array:: DS MAX_ENTITIES * SIZEOF_ENTITY
 
 SECTION "Entity Manager state", WRAM0
-for_each_routine: DS 2       ;; rutina que está llamando man_entity_for_each
+for_each_routine: DS 2       
 
 SECTION "Entity Manager CODE", ROM0
 
@@ -31,28 +31,28 @@ man_entity_init::
 ;;-----------------------------------------------------------------------------
 ;; man_entity_alloc: busca una entidad libre, la marca como usada y pone a 0
 ;; el resto de sus campos.
-;; 📤 DE = entidad reservada y carry a 0, o carry a 1 si el array está lleno
+;; DE = entidad reservada y carry a 0, o carry a 1 si el array está lleno
 ;; Modifica: A, F, B, DE
 man_entity_alloc::
    ld de, entity_array
    ld b, MAX_ENTITIES
 .find:
-   ld a, [de]               ;; E_ACTIVE es el campo 0
+   ld a, [de]               
    cp 0
    jr z, .found
-   ld a, e                  ;; siguiente entidad (solo cambia la parte baja)
+   ld a, e                  ;; siguiente entidad
    add SIZEOF_ENTITY
    ld e, a
    dec b
    jr nz, .find
-   scf                      ;; lleno: lo indicamos con el carry a 1
+   scf                      ;; lleno
    ret
 .found:
    push de
    ld a, 1
-   ld [de], a               ;; E_ACTIVE = 1
+   ld [de], a               
    inc de
-   xor a                    ;; A = 0 (y carry a 0: lo devolvemos así)
+   xor a                    ;; A = 0 
    ld b, SIZEOF_ENTITY - 1
 .clear_fields:
    ld [de], a
@@ -64,16 +64,11 @@ man_entity_alloc::
 
 ;;-----------------------------------------------------------------------------
 ;; man_entity_for_each: llama a una rutina por cada entidad activa.
-;; La SM83 no tiene "call hl", así que se simula como en la sesión 06.1:
-;; se mete en la pila la dirección de vuelta y se salta con jp hl. El ret
-;; de la rutina vuelve a .back.
-;; 📥 HL = rutina. La recibe con DE = entidad y puede modificar cualquier
-;;        registro: aquí se guardan BC y DE antes de llamarla.
-;; ⚠️ La rutina NO puede llamar a su vez a man_entity_for_each (pisaría
-;;    for_each_routine).
+;; HL = rutina. La recibe con DE = entidad y puede modificar cualquier
+;; registro: aquí se guardan BC y DE antes de llamarla.
 ;; Modifica: A, F, BC, DE, HL
 man_entity_for_each::
-   ld a, l                  ;; guardar la rutina: HL lo necesitamos para saltar
+   ld a, l                  ;; guardar la rutina
    ld [for_each_routine], a
    ld a, h
    ld [for_each_routine + 1], a
@@ -92,7 +87,7 @@ man_entity_for_each::
    ld l, a
    ld a, [for_each_routine + 1]
    ld h, a
-   jp hl                    ;; 3) saltar (su ret vuelve a .back)
+   jp hl                    ;; 3) saltar
 .back:
    pop de
    pop bc
@@ -106,8 +101,8 @@ man_entity_for_each::
 
 ;;-----------------------------------------------------------------------------
 ;; man_entity_at: ¿hay alguna entidad activa en la casilla (B, C)?
-;; 📥 B = fila, C = columna
-;; 📤 carry a 1 si está ocupada, carry a 0 si está libre
+;; B = fila, C = columna
+;; carry a 1 si está ocupada, carry a 0 si está libre
 ;; Modifica: A, F, E, HL
 man_entity_at::
    ld hl, entity_array
