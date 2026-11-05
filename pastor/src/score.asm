@@ -1,17 +1,3 @@
-;;=============================================================================
-;; score.asm — Puntuación y récord guardado en la RAM del cartucho
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Los puntos se guardan con UN DÍGITO POR BYTE, el más alto primero:
-;;     score: 0, 0, 1, 2, 3, 0   =  001230 puntos
-;; Sumar es como en el colegio: si un dígito pasa de 9, se le resta 10 y
-;; nos llevamos 1 al de su izquierda. Y para pintar un dígito basta con
-;; sumarle TILE_DIGIT_0.
-;;
-;; El récord se guarda en la SRAM con batería (cartucho $03 de la cabecera:
-;; MBC1 + RAM + BATTERY), que no se borra al apagar. Una SRAM nueva trae
-;; basura, así que delante del récord va una firma: si no está, récord = 0.
-;;=============================================================================
 INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 
@@ -31,7 +17,7 @@ SECTION "Score CODE", ROM0
 save_signature_rom:
    db "PSTR"                ;; este fichero no usa CHARMAP: son letras ASCII normales
 
-;;-----------------------------------------------------------------------------
+
 ;; score_reset: puntuación a 0 al empezar una partida.
 ;; Modifica: A, F, B, HL
 score_reset::
@@ -44,14 +30,13 @@ score_reset::
    jr nz, .clear
    ret
 
-;;-----------------------------------------------------------------------------
 ;; score_add_digit: suma A (0..9) a un dígito de la puntuación, llevando
 ;; el acarreo hacia la izquierda.
 ;; Los dígitos son score + 0 (centenas de millar) ... score + 5 (unidades):
 ;;    10 puntos -> HL = score + 4 (decenas),  A = 1
 ;;   100 puntos -> HL = score + 3 (centenas), A = 1
 ;; Con 6 dígitos no se llega nunca a desbordar (999999), así que no se comprueba.
-;; 📥 HL = dígito donde sumar, A = cantidad (0..9)
+;; HL = dígito donde sumar, A = cantidad (0..9)
 ;; Modifica: A, F, HL
 score_add_digit::
    add [hl]                 ;; A = dígito + cantidad
@@ -68,7 +53,6 @@ score_add_digit::
    ld [hud_dirty], a        ;; que el marcador se repinte
    ret
 
-;;-----------------------------------------------------------------------------
 ;; record_load: lee el récord de la SRAM. Llamar una vez al arrancar.
 ;; Modifica: A, F, BC, DE, HL
 record_load::
@@ -107,11 +91,10 @@ record_load::
    ld [rRAMG], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; record_check: si la puntuación supera el récord, lo actualiza y lo guarda.
 ;; Llamar al acabar la partida (ganada o perdida).
 ;; Se compara dígito a dígito desde el más alto: el primero distinto decide.
-;; 📤 new_record = 1 si se batió
+;; new_record = 1 si se batió
 ;; Modifica: A, F, BC, DE, HL
 record_check::
    xor a
