@@ -1,13 +1,12 @@
 INCLUDE "constants.inc"
 
 SECTION "Corral state", WRAM0
-sheep_left:: DS 1            ;; ovejas que faltan por encerrar
-game_won::   DS 1            ;; 1 cuando están todas dentro
+sheep_left:: DS 1            
+game_won::   DS 1            
 
 SECTION "Corral system CODE", ROM0
 
-;; sys_corral_init: cuenta las ovejas del nivel.
-;; Llamar después de crear las entidades.
+
 sys_corral_init::
    xor a
    ld [sheep_left], a
@@ -15,8 +14,7 @@ sys_corral_init::
    ld hl, count_loose_sheep
    jp man_entity_for_each
 
-;; count_loose_sheep: (para for_each) suma 1 a sheep_left si es oveja suelta.
-;; DE = entidad
+
 count_loose_sheep:
    ld h, d
    ld a, E_TYPE
@@ -29,8 +27,7 @@ count_loose_sheep:
    inc [hl]
    ret
 
-;; sys_corral_update: encierra las ovejas que han entrado y comprueba victoria.
-;; Llamar después de sys_ai_update.
+
 sys_corral_update::
    ld hl, sys_corral_one
    call man_entity_for_each
@@ -41,8 +38,7 @@ sys_corral_update::
    ld [game_won], a
    ret
 
-;; sys_corral_one: (para for_each) si una oveja suelta pisa corral, la encierra.
-;; DE = entidad
+
 sys_corral_one:
    ld h, d
    ld a, E_TYPE
