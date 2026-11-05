@@ -2,36 +2,35 @@ INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
 
-;; "PAUSA" (5 letras) centrado en la fila 9: columna (20 - 5) / 2 = 7
+
 DEF PAUSE_ROW     EQU 9
 DEF PAUSE_COL     EQU 7
 DEF PAUSE_LENGTH  EQU 5
 
 SECTION "Scene game state", WRAM0
-current_level:: DS 1           ;; 0 .. NUM_LEVELS - 1
-time_left::     DS TIME_DIGITS ;; segundos que quedan, un dígito por byte
-frame_count:    DS 1           ;; frames hasta el siguiente segundo
+current_level:: DS 1           
+time_left::     DS TIME_DIGITS 
+frame_count:    DS 1           
 paused::        DS 1
-win_timer:      DS 1           ;; frames de espera tras ganar, antes del mensaje
+win_timer:      DS 1           
 win_anim_timer: DS 1
 win_anim_state: DS 1
 sheep_pose_tile: DS 1
 
 SECTION "Scene game CODE", ROM0
 
-;; scene_game_new_game: empieza una partida desde el nivel 1.
+
 scene_game_new_game::
    call score_reset
    xor a
    ld [current_level], a
    jr scene_game_enter_level
 
-;; scene_game_enter_level: carga current_level y pasa a la escena de juego.
+
 scene_game_enter_level::
    call lcd_off
 
-   ;;--- HL = level_table + current_level * LEVEL_ENTRY_SIZE ---
-   ;; (sumando LEVEL_ENTRY_SIZE tantas veces como indique el nivel)
+
    ld hl, level_table
    ld de, LEVEL_ENTRY_SIZE
    ld a, [current_level]
@@ -43,7 +42,7 @@ scene_game_enter_level::
    jr .find_entry
 .entry_found:
 
-   ;;--- Leer la entrada: mapa (2 bytes), spawns (2 bytes), tiempo (3 dígitos) ---
+  
    ld a, [hl+]
    ld c, a
    ld a, [hl+]
@@ -80,9 +79,7 @@ scene_game_enter_level::
    ld [scene_id], a
    ret
 
-;; scene_game_init: carga el nivel y crea sus entidades.
-;; LLAMAR CON LA PANTALLA APAGADA: pinta el nivel entero en VRAM.
-;; HL = mapa del nivel, DE = su lista de spawns
+
 scene_game_init::
    push de
    call sys_render_reset
@@ -114,61 +111,55 @@ scene_game_init::
    call spawn_entity
    jr nc, .wolves
 .entities_done:
-   call sys_corral_init     ;; cuenta ovejas
-   jp sys_render_init       ;; dibujarlo todo ya (pantalla apagada)
+   call sys_corral_init     
+   jp sys_render_init       
 
-;; spawn_entity: crea una entidad con la siguiente posición de la lista.
-;; HL = puntero a la lista (fila, columna, ..., END_OF_LIST)
-;; A = tipo, C = tile
-;; HL avanzado al siguiente par
-;;    carry a 1 si la lista se acabó o el array está lleno (no se creó nada)
-;; Modifica: A, F, BC, DE, HL
+
 spawn_entity:
-   ld b, a                  ;; B = tipo
+   ld b, a                  
    ld a, [hl]
-   cp END_OF_LIST           ;; centinela: no hay más entidades
+   cp END_OF_LIST           
    jr z, .no_more
 
    push bc
    push hl
-   call man_entity_alloc    ;; DE = entidad nueva
+   call man_entity_alloc    
    pop hl
    pop bc
-   jr c, .no_more           ;; array lleno (no debería pasar: MAX_ENTITIES = 16)
+   jr c, .no_more           
 
-   inc de                   ;; E_TYPE (campo 1)
+   inc de                   
    ld a, b
    ld [de], a
-   inc de                   ;; E_Y (campo 2)
+   inc de                   
    ld a, [hl+]
    ld [de], a
-   inc de                   ;; E_X (campo 3)
+   inc de                   
    ld a, [hl+]
    ld [de], a
-   inc de                   ;; E_TILE (campo 4)
+   inc de                   
    ld a, c
    ld [de], a
-   ld a, b                  ;; el pastor empieza con cooldown 0 (alloc ya lo puso a 0)
+   ld a, b                  
    cp TYPE_SHEPHERD
    jr z, .created
-   inc de                   ;; E_OLD_Y, E_OLD_X (campos 5 y 6): los rellena sys_render_init
+   inc de                   
    inc de
-   inc de                   ;; E_COOLDOWN (campo 7) de las ovejas al azar: si no,
-   call rng_next            ;; todas darían el paso en el mismo frame
-   and %00000111            ;; 0..7
+   inc de                   
+   call rng_next            
+   and %00000111            
    ld [de], a
 .created:
-   xor a                    ;; carry a 0: creada
+   xor a                   
    ret
 
 .no_more:
    scf
    ret
 
-;; scene_game_update: un frame de juego. Lo llama el gestor de escenas
-;; justo después de wait_vblank.
+
 scene_game_update::
-   call sys_render_flush    ;; primero: es lo único que toca VRAM
+   call sys_render_flush    
    call joypad_read
 
    ld a, [game_won]
@@ -184,12 +175,12 @@ scene_game_update::
    jp nz, pause_on
 
    call sys_input_update
-   call sys_ai_update       ;; después del pastor: reaccionan en el mismo frame
+   call sys_ai_update       
    call sys_corral_update
    call sys_timer_update
-   ret c                    ;; se acabó el tiempo: ya estamos en otra escena
+   ret c                    
    call hud_update
-   jp sys_render_update     ;; último: encola lo que se haya movido
+   jp sys_render_update     
 
 .paused:
    ld a, [joypad_pressed]
@@ -198,7 +189,7 @@ scene_game_update::
    jp pause_off
 
 .won:
-   call hud_update          ;; que se vea el último punto y el 00
+   call hud_update          
    ld hl, win_anim_timer
    dec [hl]
    jr nz, .win_anim_done
@@ -214,7 +205,7 @@ scene_game_update::
    ret nz
    jp level_won
 
-;; Alterna la pose de todas las ovejas encerradas durante la celebración.
+
 scene_game_set_sheep_pose:
    ld a, [win_anim_state]
    and a
@@ -243,16 +234,14 @@ scene_game_set_sheep_pose_one:
    ld [hl], a
    jp sys_render_queue_draw
 
-;; sys_timer_update: descuenta un segundo cada FRAMES_PER_SECOND frames.
-;; carry a 1 si el tiempo se acabó (y ya se ha cambiado de escena)
+
 sys_timer_update:
    ld hl, frame_count
    dec [hl]
    jr nz, .no_change
    ld [hl], FRAMES_PER_SECOND
 
-   ;;--- Restar 1 segundo, empezando por las unidades ---
-   ;; Si un dígito vale 0, pasa a 9 y "pedimos prestado" al de su izquierda.
+
    ld hl, time_left + TIME_DIGITS - 1   ;; unidades
 .borrow:
    ld a, [hl]
@@ -266,7 +255,7 @@ sys_timer_update:
    ld a, 1
    ld [hud_dirty], a
 
-   ;;--- ¿Ha llegado a 000? (los 3 dígitos suman 0 solo si todos son 0) ---
+  
    ld hl, time_left
    ld a, [hl+]
    add [hl]
@@ -287,10 +276,7 @@ sys_timer_update:
    ret
 
 
-;; level_won: suma el bonus y pasa al mensaje de nivel superado o al final.
-;; Bonus = 100 puntos + 10 por cada segundo que sobre. Multiplicar el tiempo
-;; por 10 es correr sus dígitos una posición a la izquierda:
-;;   unidades de segundo -> decenas de puntos, decenas -> centenas, ...
+
 level_won:
    call music_level_clear_start
    ld a, [time_left + 2]    ;; unidades de segundo -> decenas de puntos
@@ -322,9 +308,7 @@ level_won:
    ld b, AFTER_MESSAGE_TITLE
    jp scene_message_enter
 
-;; pause_on / pause_off: congela la partida y escribe/borra PAUSA.
-;; Al quitarla, se repinta el fondo bajo el texto y todas las entidades
-;; (alguna podía estar debajo).
+
 pause_on:
    ld a, 1
    ld [paused], a
@@ -351,7 +335,7 @@ pause_off:
    jr nz, .restore
    jp sys_render_redraw_all
 
-;; Textos de esta escena y de los mensajes que lanza
+
 text_pause:
    db "PAUSA", END_OF_LIST
 text_level_clear:
