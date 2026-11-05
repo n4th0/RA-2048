@@ -1,10 +1,3 @@
-;;=============================================================================
-;; scene_message.asm — Pantalla de mensaje entre niveles y al acabar
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Muestra un título (NIVEL SUPERADO, TIEMPO AGOTADO, ENHORABUENA), los
-;; puntos y el récord. START continúa según after_message.
-;;=============================================================================
 INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
@@ -18,11 +11,10 @@ show_timer:    DS 1
 
 SECTION "Scene message CODE", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; scene_message_enter: dibuja el mensaje y pasa a esta escena.
-;; 📥 HL = dónde escribir el título en el tilemap (ya centrado por quien llama)
-;;    DE = título (acabado en END_OF_LIST)
-;;    B  = qué hacer con START (AFTER_MESSAGE_NEXT_LEVEL / _TITLE)
+;; HL = dónde escribir el título en el tilemap (ya centrado por quien llama)
+;; DE = título (acabado en END_OF_LIST)
+;; B  = qué hacer con START (AFTER_MESSAGE_NEXT_LEVEL / _TITLE)
 scene_message_enter::
    ld a, b
    ld [after_message], a
@@ -71,7 +63,6 @@ scene_message_enter::
    ld [scene_id], a
    ret
 
-;;-----------------------------------------------------------------------------
 ;; scene_message_update: espera a START y sigue.
 scene_message_update::
    call music_update
