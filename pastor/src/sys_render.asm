@@ -1,7 +1,7 @@
 INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 
-;; Como mucho, cada entidad encola un borrado y un dibujo, más el marcador
+
 DEF QUEUE_MAX   EQU MAX_ENTITIES * 2 + HUD_MAX_TILES
 DEF QUEUE_ENTRY EQU 3        ;; dirección (2 bytes, little endian) + tile
 
@@ -11,32 +11,26 @@ render_queue:       DS QUEUE_MAX * QUEUE_ENTRY
 
 SECTION "Render system CODE", ROM0
 
-;; sys_render_reset: vacía la cola. Llamar al empezar un nivel, antes de
-;; que nadie encole nada.
-;; Modifica: A
+
 sys_render_reset::
    xor a
    ld [render_queue_count], a
    ret
 
-;; sys_render_init: dibuja todas las entidades (y lo que ya hubiera en la cola).
-;; Para el inicio del nivel: LLAMAR CON LA PANTALLA APAGADA.
+
 sys_render_init::
    ld hl, sys_render_queue_draw
    call man_entity_for_each
    jp sys_render_flush      ;; con la pantalla apagada se puede escribir ya
 
-;; sys_render_update: encola lo que haya cambiado este frame.
-;; Llamar después de todos los sistemas que mueven entidades.
+
 sys_render_update::
    ld hl, sys_render_queue_erase_moved
    call man_entity_for_each
    ld hl, sys_render_queue_draw_moved
    jp man_entity_for_each
 
-;; sys_render_flush: escribe la cola en VRAM y la vacía.
-;; Llamar justo después de wait_vblank, antes que cualquier otra cosa.
-;; Modifica: A, F, B, DE, HL
+
 sys_render_flush::
    ld a, [render_queue_count]
    cp 0
@@ -57,11 +51,7 @@ sys_render_flush::
 .done:                      ;; los tests miden aquí si seguimos dentro del VBLANK
    ret
 
-;; render_queue_push: añade (HL = dirección, A = tile) al final de la cola.
-;; La cola no puede llenarse: QUEUE_MAX cubre el peor caso (todas las
-;; entidades se mueven y el marcador cambia). Quien dibuje algo nuevo en
-;; el VBLANK debe usar esta rutina y ampliar QUEUE_MAX si hace falta.
-;; Modifica: A, F, DE, HL
+
 render_queue_push::
    push af
    ld d, h
@@ -86,17 +76,12 @@ render_queue_push::
    inc [hl]
    ret
 
-;; sys_render_redraw_all: encola todas las entidades, se hayan movido o no.
-;; Para cuando algo ha pintado encima de ellas (p. ej. el texto de PAUSA).
+
 sys_render_redraw_all::
    ld hl, sys_render_queue_draw
    jp man_entity_for_each
 
-;; tilemap_address: dirección en el tilemap de la casilla (B, C).
-;; Dirección = $9800 + fila * 32 + columna
-;; B = fila, C = columna
-;; HL = dirección
-;; Modifica: A, F, HL
+
 tilemap_address::
    ld h, 0
    ld l, b
@@ -113,12 +98,7 @@ tilemap_address::
    ld h, a
    ret
 
-;; load_position: lee 2 campos seguidos (fila, columna) de la entidad.
-;; Campo = base + desplazamiento. Como el array está alineado (ALIGN[8]),
-;; la parte alta es siempre D y solo hay que sumar a la baja.
-;; DE = entidad, A = desplazamiento del primer campo (E_Y o E_OLD_Y)
-;; B = fila, C = columna
-;; Modifica: A, F, BC, HL
+
 load_position:
    ld h, d
    add e                    ;; el array está alineado: E + campo no desborda
@@ -128,10 +108,7 @@ load_position:
    ld c, [hl]
    ret
 
-;; has_moved: ¿la posición actual es distinta de la dibujada?
-;; DE = entidad
-;; Z a 1 si NO se ha movido
-;; Modifica: A, F, BC, HL
+
 has_moved:
    ld a, E_Y
    call load_position       ;; B, C = posición actual
@@ -145,8 +122,7 @@ has_moved:
    cp c
    ret
 
-;; sys_render_queue_erase_moved: (para for_each) encola el fondo donde estaba.
-;; DE = entidad
+
 sys_render_queue_erase_moved:
    call has_moved
    ret z
@@ -158,15 +134,13 @@ sys_render_queue_erase_moved:
    pop af
    jp render_queue_push
 
-;; sys_render_queue_draw_moved: (para for_each) encola la entidad en su sitio.
-;; DE = entidad
+
 sys_render_queue_draw_moved:
    call has_moved
    ret z
    jr sys_render_queue_draw
 
-;; sys_render_queue_draw: (para for_each) encola la entidad y anota dónde.
-;; DE = entidad
+
 sys_render_queue_draw:
    ld a, E_Y
    call load_position       ;; B, C = posición actual
