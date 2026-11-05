@@ -2,14 +2,14 @@ INCLUDE "hardware.inc"
 INCLUDE "constants.inc"
 INCLUDE "charmap.inc"
 
-;; Posiciones en la fila 0 (dirección = $9800 + columna)
-DEF HUD_LEVEL       EQU _SCRN0 + 0    ;; "N" y el número de nivel
-DEF HUD_TIME        EQU _SCRN0 + 3    ;; "T" y 3 dígitos
-DEF HUD_SCORE       EQU _SCRN0 + 8    ;; 6 dígitos
-DEF HUD_SHEEP_ICON  EQU _SCRN0 + 17   ;; icono de oveja
-DEF HUD_SHEEP_COUNT EQU _SCRN0 + 18   ;; 2 dígitos
 
-;; hud_init encola 4 tiles fijos + hud_update 11 números = 15 <= HUD_MAX_TILES
+DEF HUD_LEVEL       EQU _SCRN0 + 0   
+DEF HUD_TIME        EQU _SCRN0 + 3    
+DEF HUD_SCORE       EQU _SCRN0 + 8    
+DEF HUD_SHEEP_ICON  EQU _SCRN0 + 17   
+DEF HUD_SHEEP_COUNT EQU _SCRN0 + 18   
+
+
 
 SECTION "HUD state", WRAM0
 hud_dirty::  DS 1            
@@ -22,8 +22,7 @@ hud_level_text:
 hud_time_text:
    db "T", END_OF_LIST
 
-;; hud_init: encola el marcador completo.
-;; Modifica: A, F, BC, DE, HL
+
 hud_init::
    ld hl, HUD_LEVEL
    ld de, hud_level_text
@@ -46,9 +45,7 @@ hud_init::
    ld [hud_dirty], a
    jr hud_update
 
-;; hud_update: si hud_dirty = 1, encola tiempo, puntos y ovejas.
-;; Llamar una vez por frame, antes de sys_render_update.
-;; Modifica: A, F, BC, DE, HL
+
 hud_update::
    ld a, [hud_dirty]
    cp 0
