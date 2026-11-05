@@ -15,7 +15,6 @@ for_each_routine: DS 2
 
 SECTION "Entity Manager CODE", ROM0
 
-;;-----------------------------------------------------------------------------
 ;; man_entity_init: deja todas las entidades libres (array entero a 0).
 ;; Modifica: A, F, B, HL
 man_entity_init::
@@ -28,7 +27,6 @@ man_entity_init::
    jr nz, .clear
    ret
 
-;;-----------------------------------------------------------------------------
 ;; man_entity_alloc: busca una entidad libre, la marca como usada y pone a 0
 ;; el resto de sus campos.
 ;; DE = entidad reservada y carry a 0, o carry a 1 si el array está lleno
@@ -40,19 +38,19 @@ man_entity_alloc::
    ld a, [de]               
    cp 0
    jr z, .found
-   ld a, e                  ;; siguiente entidad
+   ld a, e                  
    add SIZEOF_ENTITY
    ld e, a
    dec b
    jr nz, .find
-   scf                      ;; lleno
+   scf                      
    ret
 .found:
    push de
    ld a, 1
    ld [de], a               
    inc de
-   xor a                    ;; A = 0 
+   xor a                     
    ld b, SIZEOF_ENTITY - 1
 .clear_fields:
    ld [de], a
@@ -62,7 +60,6 @@ man_entity_alloc::
    pop de
    ret
 
-;;-----------------------------------------------------------------------------
 ;; man_entity_for_each: llama a una rutina por cada entidad activa.
 ;; HL = rutina. La recibe con DE = entidad y puede modificar cualquier
 ;; registro: aquí se guardan BC y DE antes de llamarla.
@@ -99,7 +96,6 @@ man_entity_for_each::
    jr nz, .loop
    ret
 
-;;-----------------------------------------------------------------------------
 ;; man_entity_at: ¿hay alguna entidad activa en la casilla (B, C)?
 ;; B = fila, C = columna
 ;; carry a 1 si está ocupada, carry a 0 si está libre
