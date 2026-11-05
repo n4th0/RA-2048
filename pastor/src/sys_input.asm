@@ -2,14 +2,12 @@ INCLUDE "constants.inc"
 
 SECTION "Input system CODE", ROM0
 
-;; sys_input_update: aplica el mando a las entidades controlables.
-;; Llamar después de joypad_read.
+
 sys_input_update::
    ld hl, sys_input_one
    jp man_entity_for_each
 
-;; sys_input_one: (para for_each) mueve la entidad si es el pastor.
-;; DE = entidad
+
 sys_input_one:
    ld h, d
    ld a, E_TYPE
@@ -19,7 +17,7 @@ sys_input_one:
    cp TYPE_SHEPHERD
    ret nz
 
-   ;;--- Cooldown: si aún no toca dar un paso, solo se descuenta ---
+  
    ld a, E_COOLDOWN
    add e
    ld l, a
@@ -30,14 +28,14 @@ sys_input_one:
    ret
 
 .ready:
-   ld a, E_Y                ;; B, C = posición actual
+   ld a, E_Y               
    add e
    ld l, a
    ld b, [hl]
    inc l
    ld c, [hl]
 
-   ld a, [joypad_dpad]      ;; B, C = casilla destino según la dirección
+   ld a, [joypad_dpad]      
    bit PAD_RIGHT, a
    jr nz, .right
    bit PAD_LEFT, a
@@ -45,7 +43,7 @@ sys_input_one:
    bit PAD_UP, a
    jr nz, .up
    bit PAD_DOWN, a
-   ret z                    ;; ninguna dirección: quieto
+   ret z                  
    inc b
    jr .try_move
 .right:
