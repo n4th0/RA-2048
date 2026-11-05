@@ -1,12 +1,3 @@
-;;=============================================================================
-;; tiles.asm — Gráficos del juego (se copian a VRAM $8000 al arrancar)
-;; Game Boy DMG · CPU SM83 · sintaxis RGBDS 0.9
-;;
-;; Cada tile son 8 líneas de 8 píxeles. La notación `01230000` de RGBDS
-;; escribe cada píxel con su color (0 blanco, 1 gris claro, 2 gris oscuro,
-;; 3 negro) y el ensamblador lo convierte a los 2 bytes por línea de la GB.
-;; El orden de los tiles DEBE coincidir con los índices de constants.inc.
-;;=============================================================================
 INCLUDE "constants.inc"
 
 SECTION "Tiles", ROM0
@@ -79,6 +70,5 @@ tiles::
    dw `03333300, `00000300, `00003000, `00030000, `00300000, `03000000, `03333300, `00000000 ;; Z
 tiles_end::
 
-;; Si alguien añade un índice en constants.inc y olvida su dibujo (o al revés),
-;; el ensamblado falla aquí en vez de mostrar tiles cambiados en pantalla.
+
 ASSERT tiles_end - tiles == NUM_TILES * 16, "tiles.asm y constants.inc no tienen el mismo número de tiles"
